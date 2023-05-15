@@ -1,18 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:orientation="vertical"
+    android:background="@color/main_background"
+    tools:context=".MainActivity"
+    android:paddingHorizontal="16dp"
+    android:paddingBottom="28dp"
+    android:paddingTop="14dp"
+    android:weightSum="3">
 
     <TextView
         android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:text="Playlist maker"
+        android:textColor="@color/white"
+        android:textSize="26sp" />
+    <Button
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:backgroundTint="@color/white"
+        android:gravity="center"
+        app:icon="@drawable/search_icon"
+        android:id="@+id/search"
+        android:textSize="26sp"
+        android:text="Поиск"
+        android:paddingHorizontal="120dp"
+        android:textColor="@color/main_text"
+        android:textAllCaps="false"
+        android:layout_weight="1"
+        app:iconGravity="textStart"
+        app:iconTint="@color/main_text"
+        app:cornerRadius="20dp"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <Button
+        android:id="@+id/library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:backgroundTint="@color/white"
+        android:paddingHorizontal="80dp"
+        android:text="Медиатека"
+        android:textAllCaps="false"
+        android:textColor="@color/main_text"
+        android:textSize="26sp"
+        app:cornerRadius="20dp"
+        app:icon="@drawable/library_icon"
+        app:iconGravity="textStart"
+        app:iconTint="@color/main_text" />
+
+    <Button
+        android:id="@+id/settings"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/white"
+        android:gravity="center"
+        android:paddingHorizontal="80dp"
+        android:text="Настройки"
+        android:textAllCaps="false"
+        android:textColor="@color/main_text"
+        app:icon="@drawable/settings_icon"
+        android:layout_weight="1"
+        android:textSize="26sp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/main_text"
+        app:cornerRadius="20dp"/>
+</LinearLayout>
