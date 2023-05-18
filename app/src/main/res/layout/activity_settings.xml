@@ -9,117 +9,66 @@
     tools:context=".SettingsActivity">
 
     <TextView
-        android:id="@+id/arrowID"
+        android:id="@+id/arrowBackButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:drawablePadding="28dp"
-        android:paddingStart="20dp"
+        android:paddingStart="@dimen/settings_padding_start"
         android:paddingTop="14dp"
-        android:text="Настройки"
+        android:text="@string/settings"
         android:textColor="@color/main_text"
         android:textSize="26sp"
         app:drawableStartCompat="@drawable/arrow_back_icon" />
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="60dp" />
+        android:layout_height="@dimen/settings_height"/>
 
-    <LinearLayout
+    <Switch
+        android:paddingStart="@dimen/settings_padding_start"
+        android:id="@+id/switch1"
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:orientation="horizontal">
+        android:layout_height="@dimen/settings_height"
+        android:layout_gravity="center_vertical"
+        android:backgroundTint="@color/white"
+        android:paddingEnd="18dp"
+        android:textAllCaps="false"
+        android:textSize="@dimen/settings_text_size"
+        tools:ignore="TouchTargetSizeCheck"
+        android:text="@string/button_theme"/>
 
-        <TextView
-            android:layout_width="333dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Темная тема"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:paddingStart="20dp"/>
-
-        <Switch
-            android:id="@+id/switch1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:backgroundTint="@color/white"
-            android:paddingEnd="18dp"
-            android:textAllCaps="false"
-            android:textSize="16sp"
-            tools:ignore="TouchTargetSizeCheck" />
-    </LinearLayout>
-
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="333dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Поделится приложением"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:paddingStart="20dp"/>
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="0dp"
-            android:layout_height="18dp"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/share_icon"
-            tools:ignore="DuplicateIds"
-            android:paddingEnd="1dp"/>
-    </LinearLayout>
-
-    <LinearLayout
+        android:layout_height="@dimen/settings_height"
+        android:layout_gravity="center_vertical"
+        android:text="@string/button_share"
+        android:textColor="@color/black"
+        android:textSize="@dimen/settings_text_size"
+        android:paddingStart="@dimen/settings_padding_start"
+        android:paddingEnd="@dimen/settings_padding_end"
+        android:gravity="left|center"
+        android:drawableRight="@drawable/share_icon"/>
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="333dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Написать в поддержку"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:paddingStart="20dp"/>
-
-        <ImageView
-            android:layout_gravity="center_vertical"
-            android:id="@+id/imageView2"
-            android:layout_width="0dp"
-            android:layout_height="18dp"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/support_icon"
-            tools:ignore="DuplicateIds" />
-    </LinearLayout>
-    <LinearLayout
+        android:layout_height="@dimen/settings_height"
+        android:gravity="left|center"
+        android:layout_gravity="center_vertical"
+        android:text="@string/button_support"
+        android:textColor="@color/black"
+        android:textSize="@dimen/settings_text_size"
+        android:paddingStart="@dimen/settings_padding_start"
+        android:paddingEnd="30dp"
+        android:drawableRight="@drawable/support_icon"/>
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="52dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="333dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="Пользовательское соглашение"
-            android:textColor="@color/black"
-            android:textSize="16sp"
-            android:paddingStart="20dp"/>
-
-        <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="0dp"
-            android:layout_height="14dp"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            app:srcCompat="@drawable/arrow_forward_icon"
-            tools:ignore="DuplicateIds" />
-    </LinearLayout>
+        android:layout_height="@dimen/settings_height"
+        android:gravity="left|center"
+        android:layout_gravity="center_vertical"
+        android:text="@string/button_user_agreement"
+        android:textColor="@color/black"
+        android:textSize="@dimen/settings_text_size"
+        android:paddingStart="@dimen/settings_padding_start"
+        android:paddingEnd="@dimen/settings_padding_end"
+        android:drawableRight="@drawable/arrow_forward_icon"/>
 
 </LinearLayout>
