@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="black">#ffffff</color>
+    <color name="white">#FFFFFF</color>
+    <color name="main_background">#1A1B22</color>
+    <color name="main_text">#1A1B22</color>
+    <color name="settings_icon">#FFFFFF</color>
+    <color name="purple_700">#000000</color>
+    <color name="teal_200">#000000</color>
+    <color name="teal_700">#000000</color>
+    <color name="purple_200">#000000</color>
+    <color name="purple_500">#000000</color>
+    <color name="settings_background">#1A1B22</color>
+    <color name="settings_text">#FFFFFF</color>
+    <color name="switch_immovable">#273A82</color>
+    <color name="switch_movable">#3772E7</color>
+    <color name="button_search_background" tools:ignore="MissingDefaultResource">#FFFFFF</color>
+    <color name="search_text">#1A1B22</color>
+    <color name="transparent">#00000000</color>
+</resources>

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@color/settings_background"
     tools:context=".SettingsActivity">
 
     <TextView
@@ -16,59 +16,37 @@
         android:paddingStart="@dimen/settings_padding_start"
         android:paddingTop="14dp"
         android:text="@string/settings"
-        android:textColor="@color/main_text"
+        android:textColor="@color/settings_text"
         android:textSize="26sp"
-        app:drawableStartCompat="@drawable/arrow_back_icon" />
+        app:drawableStartCompat="@drawable/arrow_back_icon"
+        android:fontFamily="@font/ys_display_medium"/>
 
     <Space
         android:layout_width="match_parent"
         android:layout_height="@dimen/settings_height"/>
 
     <Switch
-        android:paddingStart="@dimen/settings_padding_start"
+        style="@style/SettingsButton"
         android:id="@+id/switch1"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_height"
-        android:layout_gravity="center_vertical"
-        android:backgroundTint="@color/white"
         android:paddingEnd="18dp"
-        android:textAllCaps="false"
-        android:textSize="@dimen/settings_text_size"
-        tools:ignore="TouchTargetSizeCheck"
-        android:text="@string/button_theme"/>
-
+        android:text="@string/button_theme"
+        android:thumbTint="@color/switch_movable"
+        android:trackTint="@color/switch_immovable"/>
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_height"
-        android:layout_gravity="center_vertical"
+        android:id="@+id/share"
+        style="@style/SettingsButton"
         android:text="@string/button_share"
-        android:textColor="@color/black"
-        android:textSize="@dimen/settings_text_size"
-        android:paddingStart="@dimen/settings_padding_start"
-        android:paddingEnd="@dimen/settings_padding_end"
-        android:gravity="left|center"
         android:drawableRight="@drawable/share_icon"/>
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_height"
-        android:gravity="left|center"
-        android:layout_gravity="center_vertical"
+        android:id="@+id/support"
+        style="@style/SettingsButton"
         android:text="@string/button_support"
-        android:textColor="@color/black"
-        android:textSize="@dimen/settings_text_size"
-        android:paddingStart="@dimen/settings_padding_start"
         android:paddingEnd="30dp"
         android:drawableRight="@drawable/support_icon"/>
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/settings_height"
-        android:gravity="left|center"
-        android:layout_gravity="center_vertical"
+        android:id="@+id/userAgreement"
+        style="@style/SettingsButton"
         android:text="@string/button_user_agreement"
-        android:textColor="@color/black"
-        android:textSize="@dimen/settings_text_size"
-        android:paddingStart="@dimen/settings_padding_start"
-        android:paddingEnd="@dimen/settings_padding_end"
         android:drawableRight="@drawable/arrow_forward_icon"/>
 
 </LinearLayout>

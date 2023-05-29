@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <color name="black">#000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="main_background">#3772E7</color>
@@ -10,4 +10,11 @@
     <color name="teal_700">#000000</color>
     <color name="purple_200">#000000</color>
     <color name="purple_500">#000000</color>
+    <color name="settings_background">#FFFFFFFF</color>
+    <color name="settings_text">#1A1B22</color>
+    <color name="switch_immovable">#E6E8EB</color>
+    <color name="switch_movable">#AEAFB4</color>
+    <color name="button_search_background" tools:ignore="MissingDefaultResource">#E6E8EB</color>
+    <color name="search_text">#AEAFB4</color>
+    <color name="transparent">#00000000</color>
 </resources>
