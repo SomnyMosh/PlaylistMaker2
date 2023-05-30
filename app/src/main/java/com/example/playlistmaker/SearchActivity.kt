@@ -38,17 +38,6 @@ class SearchActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
         setContentView(R.layout.activity_search)
-        val simpleTextWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        }
-
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         var searchView = findViewById<SearchView>(R.id.search_view)
         searchView.setQuery(editedText, false)
@@ -69,7 +58,7 @@ class SearchActivity : AppCompatActivity() {
         }
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener,
             SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
+            override fun onQueryTextSubmit(p0: String?): Boolean { // знаю, что searchview уже сохраняет данные, просто показываю, что я понял тему (я сначало подумал, что searchview — это кастомный edittext)
                 if(p0!=null){
                     if(editedText!=p0){
                         editedText=p0
