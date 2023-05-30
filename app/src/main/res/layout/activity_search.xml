@@ -8,6 +8,7 @@
     android:background="@color/settings_background"
     tools:context=".SettingsActivity">
 
+
     <TextView
         android:id="@+id/searchArrowBackButton"
         android:layout_width="wrap_content"
@@ -30,9 +31,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/searchview_background"
-        android:queryHint="@string/button_search"
         android:iconifiedByDefault="false"
         android:queryBackground="@color/transparent"
-        />
+        android:queryHint="@string/button_search"
+        android:searchHintIcon="@drawable/search_icon"
+        android:searchIcon="@drawable/search_icon"
+        android:inputType="text"/>
 
 </LinearLayout>
