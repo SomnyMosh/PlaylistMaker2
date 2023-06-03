@@ -46,9 +46,9 @@ class SettingsActivity : AppCompatActivity() {
         sup.setOnClickListener {
             val emailIntent = Intent(Intent.ACTION_SENDTO)
             emailIntent.data = Uri.parse("mailto:")
-            val message = "Спасибо разработчикам и разработчицам за крутое приложение!"
-            val title = "Сообщение разработчикам и разработчицам приложения Playlist Maker"
-            val email = "WorkshopOfRenen@gmail.com"
+            val message = getResources().getString(R.string.settings_message)
+            val title = getResources().getString(R.string.settings_title)
+            val email = getResources().getString(R.string.settings_email)
             emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, title)
             emailIntent.putExtra(Intent.EXTRA_TEXT, message)
@@ -57,12 +57,12 @@ class SettingsActivity : AppCompatActivity() {
         share.setOnClickListener {
             val shareIntent= Intent()
             shareIntent.action=Intent.ACTION_SEND
-            shareIntent.putExtra(Intent.EXTRA_TEXT,"https://practicum.yandex.ru/android-developer/")
+            shareIntent.putExtra(Intent.EXTRA_TEXT,getResources().getString(R.string.settings_link_share))
             shareIntent.type="text/plain"
             startActivity(Intent.createChooser(shareIntent,"Share To:"))
         }
         userA.setOnClickListener {
-            val url = Uri.parse("https://yandex.ru/legal/practicum_offer/")
+            val url = Uri.parse(getResources().getString(R.string.settings_link))
             val intent = Intent(Intent.ACTION_VIEW, url)
             startActivity(intent)
         }

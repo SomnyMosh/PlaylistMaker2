@@ -1,16 +1,17 @@
 package com.example.playlistmaker
 
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
-import android.text.Editable
 import android.text.Html
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
-import android.text.TextWatcher
 import android.view.View
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,8 +19,8 @@ import androidx.appcompat.app.AppCompatActivity
 
 class SearchActivity : AppCompatActivity() {
 
-    var editedText:String=""
-    companion object {
+    private var editedText:String=""
+    private companion object {
         const val SEARCH_TEXT = "SEARCH_TEXT"
     }
     override fun onSaveInstanceState(outState: Bundle) {
@@ -44,6 +45,19 @@ class SearchActivity : AppCompatActivity() {
 
 
         val id: Int = searchView.context.resources.getIdentifier("android:id/search_src_text", null, null)
+        val searchCloseButtonId = searchView.context.resources
+            .getIdentifier("android:id/search_close_btn", null, null)
+        val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
+        // Set on click listener
+        closeButton.setOnClickListener {
+            // Manage this event.
+            editedText=""
+            searchView.setQuery(editedText, false)
+            this.currentFocus?.let { view ->
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+        }
         val et = searchView.findViewById<View>(
             searchView.context.resources
                 .getIdentifier("android:id/search_src_text", null, null)

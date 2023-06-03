@@ -48,5 +48,4 @@
         style="@style/SettingsButton"
         android:text="@string/button_user_agreement"
         android:drawableRight="@drawable/arrow_forward_icon"/>
-
 </LinearLayout>

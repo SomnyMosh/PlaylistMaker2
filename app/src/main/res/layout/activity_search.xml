@@ -31,11 +31,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/searchview_background"
+        android:closeIcon="@android:drawable/ic_menu_close_clear_cancel"
         android:iconifiedByDefault="false"
+        android:inputType="text"
         android:queryBackground="@color/transparent"
         android:queryHint="@string/button_search"
         android:searchHintIcon="@drawable/search_icon"
         android:searchIcon="@drawable/search_icon"
-        android:inputType="text"/>
+        app:showAsAction="always"/>
 
 </LinearLayout>
