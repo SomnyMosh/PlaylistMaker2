@@ -15,7 +15,7 @@
         <item name="android:fontFamily">@font/ys_display_medium</item>
         <item name="android:outlineProvider">none</item>
     </style>
-    <style name="SettingsButton">
+    <style name="SettingsButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">@dimen/settings_height</item>
         <item name="android:layout_gravity">center_vertical</item>
