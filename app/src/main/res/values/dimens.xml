@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="main_text_size">23sp</dimen>
+    <dimen name="main_button_padding">80dp</dimen>
+    <dimen name="main_button_corner">20dp</dimen>
+    <dimen name="main_button_weight">1</dimen>
+    <dimen name="settings_height">60dp</dimen>
+    <dimen name="settings_padding_start">20dp</dimen>
+    <dimen name="settings_text_size">16sp</dimen>
+    <dimen name="settings_padding_end">35dp</dimen>
+</resources>
