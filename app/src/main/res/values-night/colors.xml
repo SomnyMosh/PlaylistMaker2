@@ -17,4 +17,5 @@
     <color name="button_search_background" tools:ignore="MissingDefaultResource">#FFFFFF</color>
     <color name="search_text">#1A1B22</color>
     <color name="transparent">#00000000</color>
+    <color name="search_subtext">#FFFFFF</color>
 </resources>

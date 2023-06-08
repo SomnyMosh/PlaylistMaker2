@@ -23,7 +23,7 @@ class SettingsActivity : AppCompatActivity() {
         val userA = findViewById<TextView>(R.id.userAgreement)
         val getBack = findViewById<TextView>(R.id.arrowBackButton)
         val switchM : Switch =  findViewById(R.id.switch1)
-        var sharedPreferences = getSharedPreferences("save", MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("save", MODE_PRIVATE)
         switchM.setChecked(sharedPreferences.getBoolean("value",true))
         switchM.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked){
