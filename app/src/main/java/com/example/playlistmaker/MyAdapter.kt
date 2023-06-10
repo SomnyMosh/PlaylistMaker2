@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.imageview.ShapeableImageView
 
 class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
@@ -23,7 +24,13 @@ class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         val currentItem = trackList[position]
-        Glide.with(holder.itemView).load(currentItem.artworkUrl100).into(holder.titleImage)
+        Glide.with(holder.itemView)
+
+            .load(currentItem.artworkUrl100)
+            .apply(RequestOptions()
+                .placeholder(R.drawable.a)
+            )
+            .into(holder.titleImage)
         holder.heading.text = currentItem.trackName
         holder.undertext.text = currentItem.subtext
 
