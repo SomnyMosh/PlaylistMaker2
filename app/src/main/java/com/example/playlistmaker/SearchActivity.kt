@@ -14,19 +14,23 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class SearchActivity : AppCompatActivity() {
     lateinit var newRecyclerView : RecyclerView
     lateinit var newArrayList: ArrayList<Track>
-    lateinit var imageLink: Array<String>
-    lateinit var upperText: Array<String>
-    lateinit var artistName: Array<String>
-    lateinit var trackDuration: Array<String>
     private var editedText:String=""
+
     companion object {
         private const val SEARCH_TEXT = "SEARCH_TEXT"
     }
@@ -53,40 +57,17 @@ class SearchActivity : AppCompatActivity() {
         val searchCloseButtonId = searchView.context.resources
             .getIdentifier("android:id/search_close_btn", null, null)
         val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://itunes.apple.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val ITunesService = retrofit.create(ITunesService::class.java)
+
         // Set on click listener
-        imageLink= arrayOf(
-            "https://is5-ssl.mzstatic.com/image/thumb/Music115/v4/7b/58/c2/7b58c21a-2b51-2bb2-e59a-9bb9b96ad8c3/00602567924166.rgb.jpg/100x100bb.jpg",
-            "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/3d/9d/38/3d9d3811-71f0-3a0e-1ada-3004e56ff852/827969428726.jpg/100x100bb.jpg",
-            "https://is4-ssl.mzstatic.com/image/thumb/Music115/v4/1f/80/1f/1f801fc1-8c0f-ea3e-d3e5-387c6619619e/16UMGIM86640.rgb.jpg/100x100bb.jpg",
-            "https://is2-ssl.mzstatic.com/image/thumb/Music62/v4/7e/17/e3/7e17e33f-2efa-2a36-e916-7f808576cf6b/mzm.fyigqcbs.jpg/100x100bb.jpg",
-            "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/a0/4d/c4/a04dc484-03cc-02aa-fa82-5334fcb4bc16/18UMGIM24878.rgb.jpg/100x100bb.jpg"
-        )
-        upperText= arrayOf(
-            "Smells Like Teen Spirit",
-            "Billie Jean",
-            "Stayin' Alive",
-            "Whole Lotta Love",
-            "Sweet Child O'Mine"
-        )
-        artistName= arrayOf(
-            "Nirvana",
-            "Michael Jackson",
-            "Bee Gees",
-            "Led Zeppelin",
-            "Guns N' Roses"
-        )
-        trackDuration= arrayOf(
-            "5:01",
-            "4:35",
-            "4:10",
-            "5:33",
-            "5:03"
-        )
         newRecyclerView=findViewById(R.id.tracks)
         newRecyclerView.layoutManager = LinearLayoutManager(this)
         newRecyclerView.setHasFixedSize(true)
         newArrayList= arrayListOf<Track>()
-        getUserdata()
         closeButton.setOnClickListener {
             // Manage this event.
             editedText=""
@@ -110,8 +91,25 @@ class SearchActivity : AppCompatActivity() {
         }
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener,
             SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean { // знаю, что searchview уже сохраняет данные, просто показываю, что я понял тему (я сначало подумал, что searchview — это кастомный edittext)
+            override fun onQueryTextSubmit(p0: String?): Boolean {
                 if(p0!=null){
+                    ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
+                        override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
+                            if (response.isSuccessful){
+                                if (response.body()?.resultCount == 0){
+                                    newArrayList.clear()
+                                    newArrayList.addAll(response.body()?.results!!)
+                                    newRecyclerView.adapter = MyAdapter(newArrayList)
+                                }else{
+
+                                }
+                            }else{
+
+                            }
+                        }
+                        override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                        }
+                    })
                     if(editedText!=p0){
                         editedText=p0
                     }
@@ -131,14 +129,6 @@ class SearchActivity : AppCompatActivity() {
         getBack.setOnClickListener {
             finish()
         }
-    }
-
-    private fun getUserdata() {
-        for (i in imageLink.indices){
-            val track = Track(upperText[i], artistName[i], trackDuration[i], imageLink[i])
-            newArrayList.add(track)
-        }
-        newRecyclerView.adapter = MyAdapter(newArrayList)
     }
 
     private fun isDarkModeOn(): Boolean {
