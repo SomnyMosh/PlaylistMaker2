@@ -1,17 +1,26 @@
 package com.example.playlistmaker
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
+import android.webkit.RenderProcessGoneDetail
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
@@ -50,6 +59,10 @@ class SearchActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
         setContentView(R.layout.activity_search)
+        val refreshButton = findViewById<Button>(R.id.refresh_button)
+        var submitEditText:String?=""
+        val internetError = findViewById<LinearLayout>(R.id.no_internet)
+        val resultsError = findViewById<LinearLayout>(R.id.results_error)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
         searchView.setQuery(editedText, false)
@@ -58,16 +71,19 @@ class SearchActivity : AppCompatActivity() {
             .getIdentifier("android:id/search_close_btn", null, null)
         val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com")
+            .baseUrl("https://itunes.apple.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val ITunesService = retrofit.create(ITunesService::class.java)
+        internetError.visibility = GONE
+        resultsError.visibility = GONE
 
         // Set on click listener
         newRecyclerView=findViewById(R.id.tracks)
         newRecyclerView.layoutManager = LinearLayoutManager(this)
         newRecyclerView.setHasFixedSize(true)
         newArrayList= arrayListOf<Track>()
+        newRecyclerView.visibility = GONE
         closeButton.setOnClickListener {
             // Manage this event.
             editedText=""
@@ -92,22 +108,29 @@ class SearchActivity : AppCompatActivity() {
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener,
             SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
+                newRecyclerView.visibility = GONE
+                internetError.visibility = GONE
+                resultsError.visibility = GONE
+                submitEditText=p0
+                if (submitEditText==null){
+                    submitEditText=""
+                }
                 if(p0!=null){
                     ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
                         override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
                             if (response.isSuccessful){
-                                if (response.body()?.resultCount == 0){
+                                if (response.body()?.resultCount != 0){
+                                    newRecyclerView.visibility = VISIBLE
                                     newArrayList.clear()
                                     newArrayList.addAll(response.body()?.results!!)
                                     newRecyclerView.adapter = MyAdapter(newArrayList)
                                 }else{
-
+                                    resultsError.visibility = VISIBLE
                                 }
-                            }else{
-
                             }
                         }
                         override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                            internetError.visibility = VISIBLE
                         }
                     })
                     if(editedText!=p0){
@@ -128,6 +151,25 @@ class SearchActivity : AppCompatActivity() {
         })
         getBack.setOnClickListener {
             finish()
+        }
+        refreshButton.setOnClickListener {
+            ITunesService.search(submitEditText!!).enqueue(object : Callback<DataTrack> {
+                override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
+                    if (response.isSuccessful){
+                        if (response.body()?.resultCount != 0){
+                            newRecyclerView.visibility = VISIBLE
+                            newArrayList.clear()
+                            newArrayList.addAll(response.body()?.results!!)
+                            newRecyclerView.adapter = MyAdapter(newArrayList)
+                        }else{
+                            resultsError.visibility = VISIBLE
+                        }
+                    }
+                }
+                override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                    internetError.visibility = VISIBLE
+                }
+            })
         }
     }
 
