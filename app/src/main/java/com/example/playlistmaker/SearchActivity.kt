@@ -2,6 +2,7 @@ package com.example.playlistmaker
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.ConnectivityManager
@@ -27,6 +28,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -35,10 +37,17 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class SearchActivity : AppCompatActivity() {
+class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
+    View.OnFocusChangeListener {
     lateinit var newRecyclerView : RecyclerView
+    lateinit var historyRecyclerView: RecyclerView
     lateinit var newArrayList: ArrayList<Track>
+    lateinit var savedTracks: ArrayList<Track>
     private var editedText:String=""
+    private lateinit var saveData: SaveData
+    lateinit var trackHistory: LinearLayout
+    lateinit var internetError : LinearLayout
+    lateinit var resultsError : LinearLayout
 
     companion object {
         private const val SEARCH_TEXT = "SEARCH_TEXT"
@@ -54,6 +63,7 @@ class SearchActivity : AppCompatActivity() {
         editedText = searchInput
 
     }
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -61,10 +71,14 @@ class SearchActivity : AppCompatActivity() {
         setContentView(R.layout.activity_search)
         val refreshButton = findViewById<Button>(R.id.refresh_button)
         var submitEditText:String?=""
-        val internetError = findViewById<LinearLayout>(R.id.no_internet)
-        val resultsError = findViewById<LinearLayout>(R.id.results_error)
+        internetError = findViewById<LinearLayout>(R.id.no_internet)
+        resultsError = findViewById<LinearLayout>(R.id.results_error)
+        trackHistory = findViewById<LinearLayout>(R.id.track_history)
+        historyRecyclerView = findViewById<RecyclerView>(R.id.savedTracks)
+        val clearButton = findViewById<Button>(R.id.clear_button)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
+        saveData= SaveData(this)
         searchView.setQuery(editedText, false)
         val id: Int = searchView.context.resources.getIdentifier("android:id/search_src_text", null, null)
         val searchCloseButtonId = searchView.context.resources
@@ -77,11 +91,13 @@ class SearchActivity : AppCompatActivity() {
         val ITunesService = retrofit.create(ITunesService::class.java)
         internetError.visibility = GONE
         resultsError.visibility = GONE
+        trackHistory.visibility = GONE
 
         // Set on click listener
         newRecyclerView=findViewById(R.id.tracks)
         newRecyclerView.layoutManager = LinearLayoutManager(this)
         newRecyclerView.setHasFixedSize(true)
+        savedTracks = arrayListOf<Track>()
         newArrayList= arrayListOf<Track>()
         newRecyclerView.visibility = GONE
         closeButton.setOnClickListener {
@@ -111,6 +127,7 @@ class SearchActivity : AppCompatActivity() {
                 newRecyclerView.visibility = GONE
                 internetError.visibility = GONE
                 resultsError.visibility = GONE
+                trackHistory.visibility = GONE
                 submitEditText=p0
                 if (submitEditText==null){
                     submitEditText=""
@@ -123,7 +140,7 @@ class SearchActivity : AppCompatActivity() {
                                     newRecyclerView.visibility = VISIBLE
                                     newArrayList.clear()
                                     newArrayList.addAll(response.body()?.results!!)
-                                    newRecyclerView.adapter = MyAdapter(newArrayList)
+                                    newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
                                 }else{
                                     resultsError.visibility = VISIBLE
                                 }
@@ -142,13 +159,22 @@ class SearchActivity : AppCompatActivity() {
 
             override fun onQueryTextChange(p0: String?): Boolean {
                 if(p0!=null){
+                    if (p0==""){
+                        trackHistory.visibility = VISIBLE
+                    }else{
+                        trackHistory.visibility = GONE
+                    }
                     if(editedText!=p0){
                         editedText=p0
                     }
+                }else{
+                    trackHistory.visibility = VISIBLE
                 }
                 return false
             }
         })
+        searchView.setOnQueryTextFocusChangeListener(this)
+
         getBack.setOnClickListener {
             finish()
         }
@@ -160,7 +186,7 @@ class SearchActivity : AppCompatActivity() {
                             newRecyclerView.visibility = VISIBLE
                             newArrayList.clear()
                             newArrayList.addAll(response.body()?.results!!)
-                            newRecyclerView.adapter = MyAdapter(newArrayList)
+                            newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
                         }else{
                             resultsError.visibility = VISIBLE
                         }
@@ -171,11 +197,43 @@ class SearchActivity : AppCompatActivity() {
                 }
             })
         }
+        clearButton.setOnClickListener {
+            savedTracks.clear()
+            saveData.setTracks(null)
+        }
     }
-
     private fun isDarkModeOn(): Boolean {
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    override fun onItemClick(position: Int) {
+        Toast.makeText(this, "Item $position clicked", Toast.LENGTH_SHORT).show()
+        savedTracks.clear()
+        val gson = Gson()
+        if (saveData.loadTracks()!=null){
+            savedTracks=(gson.fromJson(saveData.loadTracks(), DataTrackNoResults::class.java)).results
+        }
+        if (savedTracks.size >=10){
+            savedTracks.remove(savedTracks.get(0))
+            savedTracks.add(newArrayList.get(position))
+        }else{
+            savedTracks.add(newArrayList.get(position))
+        }
+        val dataSavedTracks = DataTrackNoResults(savedTracks)
+        val json : String = gson.toJson(dataSavedTracks)
+        saveData.setTracks(json)
+        historyRecyclerView.adapter=MyAdapter(savedTracks, this@SearchActivity)
+    }
+
+    override fun onFocusChange(v: View?, hasFocus: Boolean) {
+        if(hasFocus){
+            trackHistory.visibility = VISIBLE
+        }else{
+           trackHistory.visibility = GONE
+
+        }
+
     }
 
 }

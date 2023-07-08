@@ -3,6 +3,7 @@ package com.example.playlistmaker
 import android.app.Application
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -12,9 +13,8 @@ import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-
-
+@Suppress("DEPRECATION")
+class MyAdapter(private val trackList : ArrayList<Track>, private val listener: OnItemClickListener) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_list, parent, false)
         return MyViewHolder(itemView)
@@ -28,10 +28,11 @@ class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter
         holder.bind(trackList[position])
 
     }
-    class MyViewHolder( itemView : View) : RecyclerView.ViewHolder(itemView){
+    inner class MyViewHolder( itemView : View) : RecyclerView.ViewHolder(itemView), OnClickListener{
         val titleImage : ShapeableImageView = itemView.findViewById(R.id.track_cover)
         val heading : TextView = itemView.findViewById(R.id.track_title)
         val undertext : TextView = itemView.findViewById(R.id.track_subtext)
+
         fun bind (model : Track){
             val currentItem = model
             Glide.with(itemView)
@@ -43,5 +44,18 @@ class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter
             heading.text = currentItem.trackName
             undertext.text = "${currentItem.artistName} ● ${SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentItem.trackTimeMillis.toLong())}"
         }
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onClick(v: View?) {
+            val position = adapterPosition
+            if (position != RecyclerView.NO_POSITION){
+                listener.onItemClick(position)
+            }
+        }
+    }
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
     }
 }
