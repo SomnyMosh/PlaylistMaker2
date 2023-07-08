@@ -1,32 +1,45 @@
 package com.example.playlistmaker
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
+import android.webkit.RenderProcessGoneDetail
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class SearchActivity : AppCompatActivity() {
     lateinit var newRecyclerView : RecyclerView
     lateinit var newArrayList: ArrayList<Track>
-    lateinit var imageLink: Array<String>
-    lateinit var upperText: Array<String>
-    lateinit var artistName: Array<String>
-    lateinit var trackDuration: Array<String>
     private var editedText:String=""
+
     companion object {
         private const val SEARCH_TEXT = "SEARCH_TEXT"
     }
@@ -46,6 +59,10 @@ class SearchActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
         setContentView(R.layout.activity_search)
+        val refreshButton = findViewById<Button>(R.id.refresh_button)
+        var submitEditText:String?=""
+        val internetError = findViewById<LinearLayout>(R.id.no_internet)
+        val resultsError = findViewById<LinearLayout>(R.id.results_error)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
         searchView.setQuery(editedText, false)
@@ -53,40 +70,20 @@ class SearchActivity : AppCompatActivity() {
         val searchCloseButtonId = searchView.context.resources
             .getIdentifier("android:id/search_close_btn", null, null)
         val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://itunes.apple.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val ITunesService = retrofit.create(ITunesService::class.java)
+        internetError.visibility = GONE
+        resultsError.visibility = GONE
+
         // Set on click listener
-        imageLink= arrayOf(
-            "https://is5-ssl.mzstatic.com/image/thumb/Music115/v4/7b/58/c2/7b58c21a-2b51-2bb2-e59a-9bb9b96ad8c3/00602567924166.rgb.jpg/100x100bb.jpg",
-            "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/3d/9d/38/3d9d3811-71f0-3a0e-1ada-3004e56ff852/827969428726.jpg/100x100bb.jpg",
-            "https://is4-ssl.mzstatic.com/image/thumb/Music115/v4/1f/80/1f/1f801fc1-8c0f-ea3e-d3e5-387c6619619e/16UMGIM86640.rgb.jpg/100x100bb.jpg",
-            "https://is2-ssl.mzstatic.com/image/thumb/Music62/v4/7e/17/e3/7e17e33f-2efa-2a36-e916-7f808576cf6b/mzm.fyigqcbs.jpg/100x100bb.jpg",
-            "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/a0/4d/c4/a04dc484-03cc-02aa-fa82-5334fcb4bc16/18UMGIM24878.rgb.jpg/100x100bb.jpg"
-        )
-        upperText= arrayOf(
-            "Smells Like Teen Spirit",
-            "Billie Jean",
-            "Stayin' Alive",
-            "Whole Lotta Love",
-            "Sweet Child O'Mine"
-        )
-        artistName= arrayOf(
-            "Nirvana",
-            "Michael Jackson",
-            "Bee Gees",
-            "Led Zeppelin",
-            "Guns N' Roses"
-        )
-        trackDuration= arrayOf(
-            "5:01",
-            "4:35",
-            "4:10",
-            "5:33",
-            "5:03"
-        )
         newRecyclerView=findViewById(R.id.tracks)
         newRecyclerView.layoutManager = LinearLayoutManager(this)
         newRecyclerView.setHasFixedSize(true)
         newArrayList= arrayListOf<Track>()
-        getUserdata()
+        newRecyclerView.visibility = GONE
         closeButton.setOnClickListener {
             // Manage this event.
             editedText=""
@@ -110,8 +107,32 @@ class SearchActivity : AppCompatActivity() {
         }
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener,
             SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean { // знаю, что searchview уже сохраняет данные, просто показываю, что я понял тему (я сначало подумал, что searchview — это кастомный edittext)
+            override fun onQueryTextSubmit(p0: String?): Boolean {
+                newRecyclerView.visibility = GONE
+                internetError.visibility = GONE
+                resultsError.visibility = GONE
+                submitEditText=p0
+                if (submitEditText==null){
+                    submitEditText=""
+                }
                 if(p0!=null){
+                    ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
+                        override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
+                            if (response.isSuccessful){
+                                if (response.body()?.resultCount != 0){
+                                    newRecyclerView.visibility = VISIBLE
+                                    newArrayList.clear()
+                                    newArrayList.addAll(response.body()?.results!!)
+                                    newRecyclerView.adapter = MyAdapter(newArrayList)
+                                }else{
+                                    resultsError.visibility = VISIBLE
+                                }
+                            }
+                        }
+                        override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                            internetError.visibility = VISIBLE
+                        }
+                    })
                     if(editedText!=p0){
                         editedText=p0
                     }
@@ -131,14 +152,25 @@ class SearchActivity : AppCompatActivity() {
         getBack.setOnClickListener {
             finish()
         }
-    }
-
-    private fun getUserdata() {
-        for (i in imageLink.indices){
-            val track = Track(upperText[i], artistName[i], trackDuration[i], imageLink[i])
-            newArrayList.add(track)
+        refreshButton.setOnClickListener {
+            ITunesService.search(submitEditText!!).enqueue(object : Callback<DataTrack> {
+                override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
+                    if (response.isSuccessful){
+                        if (response.body()?.resultCount != 0){
+                            newRecyclerView.visibility = VISIBLE
+                            newArrayList.clear()
+                            newArrayList.addAll(response.body()?.results!!)
+                            newRecyclerView.adapter = MyAdapter(newArrayList)
+                        }else{
+                            resultsError.visibility = VISIBLE
+                        }
+                    }
+                }
+                override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                    internetError.visibility = VISIBLE
+                }
+            })
         }
-        newRecyclerView.adapter = MyAdapter(newArrayList)
     }
 
     private fun isDarkModeOn(): Boolean {

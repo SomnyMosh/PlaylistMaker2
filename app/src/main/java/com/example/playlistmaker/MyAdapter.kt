@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
@@ -33,14 +35,13 @@ class MyAdapter(private val trackList : ArrayList<Track>) : RecyclerView.Adapter
         fun bind (model : Track){
             val currentItem = model
             Glide.with(itemView)
-
                 .load(currentItem.artworkUrl100)
                 .apply(RequestOptions()
                     .placeholder(R.drawable.a)
                 )
                 .into(titleImage)
             heading.text = currentItem.trackName
-            undertext.text = currentItem.subtext
+            undertext.text = "${currentItem.artistName} ● ${SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentItem.trackTimeMillis.toLong())}"
         }
     }
 }
