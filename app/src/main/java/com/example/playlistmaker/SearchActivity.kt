@@ -29,12 +29,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.lang.reflect.Type
 
 
 class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
@@ -160,6 +162,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             override fun onQueryTextChange(p0: String?): Boolean {
                 if(p0!=null){
                     if (p0==""){
+                        newRecyclerView.visibility = GONE
                         trackHistory.visibility = VISIBLE
                     }else{
                         trackHistory.visibility = GONE
@@ -168,6 +171,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                         editedText=p0
                     }
                 }else{
+                    newRecyclerView.visibility = GONE
                     trackHistory.visibility = VISIBLE
                 }
                 return false
@@ -211,8 +215,9 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         Toast.makeText(this, "Item $position clicked", Toast.LENGTH_SHORT).show()
         savedTracks.clear()
         val gson = Gson()
+        val type = object : TypeToken<ArrayList<Track>>() {}.type
         if (saveData.loadTracks()!=null){
-            savedTracks=(gson.fromJson(saveData.loadTracks(), DataTrackNoResults::class.java)).results
+            savedTracks=gson.fromJson(saveData.loadTracks(), type)
         }
         if (savedTracks.size >=10){
             savedTracks.remove(savedTracks.get(0))
@@ -220,8 +225,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         }else{
             savedTracks.add(newArrayList.get(position))
         }
-        val dataSavedTracks = DataTrackNoResults(savedTracks)
-        val json : String = gson.toJson(dataSavedTracks)
+        val json : String = gson.toJson(savedTracks)
         saveData.setTracks(json)
         historyRecyclerView.adapter=MyAdapter(savedTracks, this@SearchActivity)
     }
