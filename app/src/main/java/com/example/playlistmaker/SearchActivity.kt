@@ -251,7 +251,6 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     }
 
     override fun onItemClick(position: Int) {
-        Toast.makeText(this, "Item $position clicked", Toast.LENGTH_SHORT).show()
         if (newRecyclerView.visibility != GONE) {
             savedTracks = convert()
             if (iterateOnTracks(savedTracks, newArrayList.get(position))) {
