@@ -14,9 +14,13 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Suppress("DEPRECATION")
-class MyAdapter(private val trackList : ArrayList<Track>, private val listener: OnItemClickListener) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+class MyAdapter(
+    private val trackList: ArrayList<Track>,
+    private val listener: OnItemClickListener
+) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_list, parent, false)
+        val itemView =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_list, parent, false)
         return MyViewHolder(itemView)
     }
 
@@ -28,33 +32,41 @@ class MyAdapter(private val trackList : ArrayList<Track>, private val listener: 
         holder.bind(trackList[position])
 
     }
-    inner class MyViewHolder( itemView : View) : RecyclerView.ViewHolder(itemView), OnClickListener{
-        val titleImage : ShapeableImageView = itemView.findViewById(R.id.track_cover)
-        val heading : TextView = itemView.findViewById(R.id.track_title)
-        val undertext : TextView = itemView.findViewById(R.id.track_subtext)
 
-        fun bind (model : Track){
-            val currentItem = model
+    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), OnClickListener {
+        private val titleImage: ShapeableImageView = itemView.findViewById(R.id.track_cover)
+        private val heading: TextView = itemView.findViewById(R.id.track_title)
+        private val undertext: TextView = itemView.findViewById(R.id.track_subtext)
+
+        fun bind(model: Track) {
             Glide.with(itemView)
-                .load(currentItem.artworkUrl100)
-                .apply(RequestOptions()
-                    .placeholder(R.drawable.a)
+                .load(model.artworkUrl100)
+                .apply(
+                    RequestOptions()
+                        .placeholder(R.drawable.a)
                 )
                 .into(titleImage)
-            heading.text = currentItem.trackName
-            undertext.text = "${currentItem.artistName} ● ${SimpleDateFormat("mm:ss", Locale.getDefault()).format(currentItem.trackTimeMillis.toLong())}"
+            heading.text = model.trackName
+            undertext.text = "${model.artistName} ● ${
+                SimpleDateFormat(
+                    "mm:ss",
+                    Locale.getDefault()
+                ).format(model.trackTimeMillis.toLong())
+            }"
         }
+
         init {
             itemView.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
             val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION){
+            if (position != RecyclerView.NO_POSITION) {
                 listener.onItemClick(position)
             }
         }
     }
+
     interface OnItemClickListener {
         fun onItemClick(position: Int)
     }
