@@ -77,10 +77,12 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         resultsError = findViewById<LinearLayout>(R.id.results_error)
         trackHistory = findViewById<LinearLayout>(R.id.track_history)
         historyRecyclerView = findViewById<RecyclerView>(R.id.savedTracks)
+        saveData= SaveData(this)
+        savedTracks = convert()
+        historyRecyclerView.adapter=MyAdapter(savedTracks, this@SearchActivity)
         val clearButton = findViewById<Button>(R.id.clear_button)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
-        saveData= SaveData(this)
         searchView.setQuery(editedText, false)
         val id: Int = searchView.context.resources.getIdentifier("android:id/search_src_text", null, null)
         val searchCloseButtonId = searchView.context.resources
@@ -91,9 +93,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val ITunesService = retrofit.create(ITunesService::class.java)
-        internetError.visibility = GONE
-        resultsError.visibility = GONE
-        trackHistory.visibility = GONE
+
 
         // Set on click listener
         newRecyclerView=findViewById(R.id.tracks)
@@ -102,6 +102,9 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         savedTracks = arrayListOf<Track>()
         newArrayList= arrayListOf<Track>()
         newRecyclerView.visibility = GONE
+        internetError.visibility = GONE
+        resultsError.visibility = GONE
+        trackHistory.visibility = GONE
         closeButton.setOnClickListener {
             // Manage this event.
             editedText=""
@@ -213,21 +216,17 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
 
     override fun onItemClick(position: Int) {
         Toast.makeText(this, "Item $position clicked", Toast.LENGTH_SHORT).show()
-        savedTracks.clear()
-        val gson = Gson()
-        val type = object : TypeToken<ArrayList<Track>>() {}.type
-        if (saveData.loadTracks()!=null){
-            savedTracks=gson.fromJson(saveData.loadTracks(), type)
-        }
+        savedTracks=convert()
         if (savedTracks.size >=10){
             savedTracks.remove(savedTracks.get(0))
             savedTracks.add(newArrayList.get(position))
         }else{
             savedTracks.add(newArrayList.get(position))
         }
+        val gson = Gson()
         val json : String = gson.toJson(savedTracks)
         saveData.setTracks(json)
-        historyRecyclerView.adapter=MyAdapter(savedTracks, this@SearchActivity)
+        historyRecyclerView.adapter?.notifyDataSetChanged()
     }
 
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
@@ -238,6 +237,17 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
 
         }
 
+    }
+    private fun convert():ArrayList<Track>{
+        val gson= Gson()
+        val type = object : TypeToken<ArrayList<Track>>() {}.type
+        return if (saveData.loadTracks()!=null){
+            gson.fromJson(saveData.loadTracks(), type)
+        }else{
+            val emptyList : ArrayList<Track>
+            emptyList = ArrayList<Track>()
+            (emptyList)
+        }
     }
 
 }
