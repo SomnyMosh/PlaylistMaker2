@@ -52,4 +52,8 @@
         <item name="android:fontFamily">@font/ys_display_medium</item>
         <item name="android:backgroundTint">@color/settings_text</item>
     </style>
+    <style name="RoundCorner2" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
 </resources>

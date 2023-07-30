@@ -224,6 +224,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                             newArrayList.clear()
                             newArrayList.addAll(response.body()?.results!!)
                             newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
+                            resultsError.visibility = GONE
                         } else {
                             resultsError.visibility = VISIBLE
                         }
@@ -251,8 +252,8 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     }
 
     override fun onItemClick(position: Int) {
+        savedTracks = convert()
         if (newRecyclerView.visibility != GONE) {
-            savedTracks = convert()
             if (iterateOnTracks(savedTracks, newArrayList.get(position))) {
                 savedTracks.remove(savedTracks.get(removableTrackPosition))
                 savedTracks.add(newArrayList.get(position))
@@ -264,12 +265,18 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                     savedTracks.add(newArrayList.get(position))
                 }
             }
-            val gson = Gson()
-            val json: String = gson.toJson(savedTracks)
-            saveData.setTracks(json)
-            historyRecyclerView.adapter?.notifyDataSetChanged()
-            historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
+        }else{
+            var reversePosition = savedTracks.size-(position+1)
+            savedTracks.add(savedTracks.get(reversePosition))
+            savedTracks.remove(reverse(savedTracks).get(position+1))
         }
+        val gson = Gson()
+        val json: String = gson.toJson(savedTracks)
+        saveData.setTracks(json)
+        historyRecyclerView.adapter?.notifyDataSetChanged()
+        historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
+        val displayIntent = Intent(this, TrackActivity::class.java)
+        startActivity(displayIntent)
     }
 
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
