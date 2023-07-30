@@ -46,12 +46,42 @@
             android:searchIcon="@drawable/search_icon"
             app:showAsAction="always" />
     </LinearLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tracks"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <LinearLayout
+        android:id="@+id/track_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="36dp" />
+
+        <TextView
+            android:id="@+id/history_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/search_history"
+            android:gravity="center"
+            android:fontFamily="@font/ys_display_medium"
+            android:textSize="19sp"
+            android:textColor="@color/settings_text" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/savedTracks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="3"/>
+
+        <Button
+            android:id="@+id/clear_button"
+            android:text="@string/clear_history"
+            style="@style/SearchMessageButton"/>
+    </LinearLayout>
     <LinearLayout
         android:id="@+id/results_error"
         android:layout_width="match_parent"
@@ -63,20 +93,15 @@
             android:layout_height="109dp" />
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/imageView_result_error"
             android:layout_width="match_parent"
             android:layout_height="120dp"
             app:srcCompat="@drawable/results_error_icon" />
 
         <TextView
+            style="@style/SearchMessage"
             android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_results"
-            android:gravity="center"
-            android:fontFamily="@font/ys_display_medium"
-            android:textSize="19sp"
-            android:textColor="@color/settings_text"/>
+            android:text="@string/no_results"/>
 
     </LinearLayout>
 
@@ -97,14 +122,9 @@
             app:srcCompat="@drawable/internet_error_icon" />
 
         <TextView
+            style="@style/SearchMessage"
             android:id="@+id/no_internet_text1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/no_connection"
-            android:gravity="center"
-            android:fontFamily="@font/ys_display_medium"
-            android:textSize="19sp"
-            android:textColor="@color/settings_text"/>
+            android:text="@string/no_connection"/>
 
         <Space
             android:layout_width="match_parent"
@@ -112,30 +132,18 @@
 
         <TextView
             android:id="@+id/no_internet_text2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:text="@string/please_check"
-            android:gravity="center"
-            android:fontFamily="@font/ys_display_medium"
-            android:textSize="19sp"
-            android:textColor="@color/settings_text"
-            android:paddingHorizontal="16dp"/>
+            android:paddingHorizontal="16dp"
+            style="@style/SearchMessage"/>
         <Space
             android:layout_width="match_parent"
             android:layout_height="21dp" />
 
         <Button
             android:id="@+id/refresh_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="@string/refresh"
-            android:layout_gravity="center"
-            android:textAllCaps="false"
-            android:fontFamily="@font/ys_display_medium"
-            android:textSize="14sp"
-            android:textColor="@color/settings_background"
-            app:cornerRadius="20dp"
-            android:backgroundTint="@color/settings_text"/>
+            style="@style/SearchMessageButton"/>
 
     </LinearLayout>
+
 </LinearLayout>
