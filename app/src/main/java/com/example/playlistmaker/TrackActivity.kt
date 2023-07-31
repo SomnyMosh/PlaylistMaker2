@@ -38,7 +38,7 @@ class TrackActivity : AppCompatActivity() {
         val country: TextView = findViewById(R.id.track_country_mutable)
         val getBack = findViewById<ShapeableImageView>(R.id.track_arrow_back_button)
         Glide.with(applicationContext)
-            .load(track.artworkUrl100)
+            .load(track.artworkUrl100.replaceAfterLast('/',"512x512bb.jpg"))
             .apply(
                 RequestOptions()
                     .placeholder(R.drawable.a)
