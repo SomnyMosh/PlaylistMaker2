@@ -226,6 +226,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                             newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
                             resultsError.visibility = GONE
                         } else {
+                            trackHistory.visibility = GONE
                             resultsError.visibility = VISIBLE
                         }
                     }
@@ -242,7 +243,6 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             savedTracks = convert()
             historyRecyclerView.adapter?.notifyDataSetChanged()
             historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
-            trackHistory.visibility = GONE
         }
     }
 
