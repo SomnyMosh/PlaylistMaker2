@@ -2,6 +2,7 @@ package com.example.playlistmaker
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.Window
@@ -23,23 +24,15 @@ class SettingsActivity : AppCompatActivity() {
         val userA = findViewById<TextView>(R.id.userAgreement)
         val getBack = findViewById<TextView>(R.id.arrowBackButton)
         val switchM : Switch =  findViewById(R.id.switch1)
-        val sharedPreferences = getSharedPreferences("save", MODE_PRIVATE)
-        switchM.setChecked(sharedPreferences.getBoolean("value",true))
-        switchM.setOnCheckedChangeListener { buttonView, isChecked ->
+        switchM.isChecked = isDarkModeOn()
+        switchM!!.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked){
-                val editor = getSharedPreferences("save", MODE_PRIVATE).edit()
-                editor.putBoolean("value", true)
-                editor.apply()
-                switchM.setChecked(true)
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             }else{
-                val editor = getSharedPreferences("save", MODE_PRIVATE).edit()
-                editor.putBoolean("value", false)
-                editor.apply()
-                switchM.setChecked(false)
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
         }
+
         getBack.setOnClickListener {
             finish()
         }
@@ -66,5 +59,9 @@ class SettingsActivity : AppCompatActivity() {
             val intent = Intent(Intent.ACTION_VIEW, url)
             startActivity(intent)
         }
+    }
+    private fun isDarkModeOn(): Boolean {
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 }
