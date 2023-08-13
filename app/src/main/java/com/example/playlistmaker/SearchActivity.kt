@@ -9,6 +9,8 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Html
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
@@ -26,6 +28,8 @@ import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -50,11 +54,17 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     lateinit var trackHistory: LinearLayout
     lateinit var internetError: LinearLayout
     lateinit var resultsError: LinearLayout
+    lateinit var progressBar: ConstraintLayout
     var inFocus: Boolean = false
     var removableTrackPosition : Int = 0
+    private var isClickAllowed = true
+    private var seacrhNow = false
+    private val handler = Handler(Looper.getMainLooper())
 
     companion object {
         private const val SEARCH_TEXT = "SEARCH_TEXT"
+        private const val CLICK_DEBOUNCE_DELAY = 1000L
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -75,6 +85,8 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
         setContentView(R.layout.activity_search)
+        progressBar= findViewById(R.id.progress_bar_layout)
+        progressBar.visibility = GONE
         val refreshButton = findViewById<Button>(R.id.refresh_button)
         var submitEditText: String? = ""
         internetError = findViewById<LinearLayout>(R.id.no_internet)
@@ -98,8 +110,8 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             .baseUrl("https://itunes.apple.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-        val ITunesService = retrofit.create(ITunesService::class.java)
-
+        var ITunesService = retrofit.create(ITunesService::class.java)
+        val searchRunnable = Runnable { searchRequest(editedText, ITunesService) }
 
         // Set on click listener
         newRecyclerView = findViewById(R.id.tracks)
@@ -151,33 +163,13 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                 internetError.visibility = GONE
                 resultsError.visibility = GONE
                 trackHistory.visibility = GONE
+                progressBar.visibility = VISIBLE
                 submitEditText = p0
                 if (submitEditText == null) {
                     submitEditText = ""
                 }
                 if (p0 != null) {
-                    ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
-                        override fun onResponse(
-                            call: Call<DataTrack>,
-                            response: Response<DataTrack>
-                        ) {
-                            if (response.isSuccessful) {
-                                if (response.body()?.resultCount != 0) {
-                                    newRecyclerView.visibility = VISIBLE
-                                    newArrayList.clear()
-                                    newArrayList.addAll(response.body()?.results!!)
-                                    newRecyclerView.adapter =
-                                        MyAdapter(newArrayList, this@SearchActivity)
-                                } else {
-                                    resultsError.visibility = VISIBLE
-                                }
-                            }
-                        }
-
-                        override fun onFailure(call: Call<DataTrack>, t: Throwable) {
-                            internetError.visibility = VISIBLE
-                        }
-                    })
+                    searchRequest(p0, ITunesService)
                     if (editedText != p0) {
                         editedText = p0
                     }
@@ -193,17 +185,22 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                             newRecyclerView.visibility = GONE
                             if (savedTracks.isNotEmpty()) {
                                 trackHistory.visibility = VISIBLE
+                                internetError.visibility= GONE
+                                resultsError.visibility = GONE
                             }
                         }
                     }
                     if (editedText != p0) {
                         editedText = p0
                     }
+                    searchDebounce(searchRunnable)
                 } else {
                     if (inFocus) {
                         newRecyclerView.visibility = GONE
                         if (savedTracks.isNotEmpty()) {
                             trackHistory.visibility = VISIBLE
+                            internetError.visibility= GONE
+                            resultsError.visibility = GONE
                         }
                     }
                 }
@@ -216,26 +213,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             finish()
         }
         refreshButton.setOnClickListener {
-            ITunesService.search(submitEditText!!).enqueue(object : Callback<DataTrack> {
-                override fun onResponse(call: Call<DataTrack>, response: Response<DataTrack>) {
-                    if (response.isSuccessful) {
-                        if (response.body()?.resultCount != 0) {
-                            newRecyclerView.visibility = VISIBLE
-                            newArrayList.clear()
-                            newArrayList.addAll(response.body()?.results!!)
-                            newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
-                            resultsError.visibility = GONE
-                        } else {
-                            trackHistory.visibility = GONE
-                            resultsError.visibility = VISIBLE
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<DataTrack>, t: Throwable) {
-                    internetError.visibility = VISIBLE
-                }
-            })
+            searchRequest(submitEditText!!, ITunesService)
         }
         clearButton.setOnClickListener {
             savedTracks.clear()
@@ -252,31 +230,33 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     }
 
     override fun onItemClick(position: Int) {
-        savedTracks = convert()
-        if (newRecyclerView.visibility != GONE) {
-            if (iterateOnTracks(savedTracks, newArrayList.get(position))) {
-                savedTracks.remove(savedTracks.get(removableTrackPosition))
-                savedTracks.add(newArrayList.get(position))
-            } else {
-                if (savedTracks.size >= 10) {
-                    savedTracks.remove(savedTracks.get(0))
+        if(clickDebounce()){
+            savedTracks = convert()
+            if (newRecyclerView.visibility != GONE) {
+                if (iterateOnTracks(savedTracks, newArrayList.get(position))) {
+                    savedTracks.remove(savedTracks.get(removableTrackPosition))
                     savedTracks.add(newArrayList.get(position))
                 } else {
-                    savedTracks.add(newArrayList.get(position))
+                    if (savedTracks.size >= 10) {
+                        savedTracks.remove(savedTracks.get(0))
+                        savedTracks.add(newArrayList.get(position))
+                    } else {
+                        savedTracks.add(newArrayList.get(position))
+                    }
                 }
+            }else{
+                var reversePosition = savedTracks.size-(position+1)
+                savedTracks.add(savedTracks.get(reversePosition))
+                savedTracks.remove(reverse(savedTracks).get(position+1))
             }
-        }else{
-            var reversePosition = savedTracks.size-(position+1)
-            savedTracks.add(savedTracks.get(reversePosition))
-            savedTracks.remove(reverse(savedTracks).get(position+1))
+            val gson = Gson()
+            val json: String = gson.toJson(savedTracks)
+            saveData.setTracks(json)
+            historyRecyclerView.adapter?.notifyDataSetChanged()
+            historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
+            val displayIntent = Intent(this, TrackActivity::class.java)
+            startActivity(displayIntent)
         }
-        val gson = Gson()
-        val json: String = gson.toJson(savedTracks)
-        saveData.setTracks(json)
-        historyRecyclerView.adapter?.notifyDataSetChanged()
-        historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
-        val displayIntent = Intent(this, TrackActivity::class.java)
-        startActivity(displayIntent)
     }
 
     override fun onFocusChange(v: View?, hasFocus: Boolean) {
@@ -292,6 +272,15 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
 
         }
 
+    }
+
+    private fun clickDebounce() : Boolean {
+        val current = isClickAllowed
+        if (isClickAllowed) {
+            isClickAllowed = false
+            handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
+        }
+        return current
     }
 
     private fun reverse(list: ArrayList<Track>): ArrayList<Track> {
@@ -320,6 +309,37 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             }
         }
         return false
+    }
+    private fun searchRequest (p0:String, ITunesService: ITunesService){
+        ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
+            override fun onResponse(
+                call: Call<DataTrack>,
+                response: Response<DataTrack>
+            ) {
+                if (response.isSuccessful) {
+                    if (response.body()?.resultCount != 0) {
+                        newRecyclerView.visibility = VISIBLE
+                        newArrayList.clear()
+                        newArrayList.addAll(response.body()?.results!!)
+                        newRecyclerView.adapter =
+                            MyAdapter(newArrayList, this@SearchActivity)
+                    } else {
+                        resultsError.visibility = VISIBLE
+                    }
+                    progressBar.visibility = GONE
+                }
+            }
+
+            override fun onFailure(call: Call<DataTrack>, t: Throwable) {
+                progressBar.visibility = GONE
+                internetError.visibility = VISIBLE
+            }
+        })
+    }
+    private fun searchDebounce(searchRunnable: Runnable) {
+        progressBar.visibility = VISIBLE
+        handler.removeCallbacks(searchRunnable)
+        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
     }
 
 }
