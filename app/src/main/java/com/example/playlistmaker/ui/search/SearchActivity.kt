@@ -1,13 +1,10 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.ui.search
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,28 +16,30 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
-import android.webkit.RenderProcessGoneDetail
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SearchView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.os.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.playlistmaker.domain.models.DataTrack
+import com.example.playlistmaker.domain.impl.MyAdapter
+import com.example.playlistmaker.R
+import com.example.playlistmaker.data.SaveData
+import com.example.playlistmaker.domain.api.ITunesService
+import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.ui.track.TrackActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.reflect.Type
 
 
 class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
@@ -58,7 +57,6 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     var inFocus: Boolean = false
     var removableTrackPosition : Int = 0
     private var isClickAllowed = true
-    private var seacrhNow = false
     private val handler = Handler(Looper.getMainLooper())
 
     companion object {
@@ -221,6 +219,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             savedTracks = convert()
             historyRecyclerView.adapter?.notifyDataSetChanged()
             historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
+            resultsError.visibility=GONE
         }
     }
 
