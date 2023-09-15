@@ -30,6 +30,7 @@ import com.example.playlistmaker.domain.models.DataTrack
 import com.example.playlistmaker.domain.impl.MyAdapter
 import com.example.playlistmaker.R
 import com.example.playlistmaker.data.SaveData
+import com.example.playlistmaker.data.TrackRepositoryImpl
 import com.example.playlistmaker.domain.api.ITunesService
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.ui.track.TrackActivity
@@ -104,12 +105,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         val searchCloseButtonId = searchView.context.resources
             .getIdentifier("android:id/search_close_btn", null, null)
         val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        var ITunesService = retrofit.create(ITunesService::class.java)
-        val searchRunnable = Runnable { searchRequest(editedText, ITunesService) }
+        val searchRunnable = Runnable { searchRequest(editedText) }
 
         // Set on click listener
         newRecyclerView = findViewById(R.id.tracks)
@@ -167,7 +163,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                     submitEditText = ""
                 }
                 if (p0 != null) {
-                    searchRequest(p0, ITunesService)
+                    searchRequest(p0)
                     if (editedText != p0) {
                         editedText = p0
                     }
@@ -211,7 +207,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             finish()
         }
         refreshButton.setOnClickListener {
-            searchRequest(submitEditText!!, ITunesService)
+            searchRequest(submitEditText!!)
         }
         clearButton.setOnClickListener {
             savedTracks.clear()
@@ -309,31 +305,25 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         }
         return false
     }
-    private fun searchRequest (p0:String, ITunesService: ITunesService){
-        ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
-            override fun onResponse(
-                call: Call<DataTrack>,
-                response: Response<DataTrack>
-            ) {
-                if (response.isSuccessful) {
-                    if (response.body()?.resultCount != 0) {
-                        newRecyclerView.visibility = VISIBLE
-                        newArrayList.clear()
-                        newArrayList.addAll(response.body()?.results!!)
-                        newRecyclerView.adapter =
-                            MyAdapter(newArrayList, this@SearchActivity)
-                    } else {
-                        resultsError.visibility = VISIBLE
-                    }
-                    progressBar.visibility = GONE
-                }
+    private fun searchRequest (p0:String){
+        val trackRepositoryImpl = TrackRepositoryImpl()
+        val tempArrayList = trackRepositoryImpl.searchTracks(p0)
+        when (trackRepositoryImpl.response.resultCode){
+            0->{
+                newRecyclerView.visibility = VISIBLE
+                newArrayList.clear()
+                newArrayList.addAll(tempArrayList)
+                newRecyclerView.adapter =
+                    MyAdapter(newArrayList, this@SearchActivity)
             }
-
-            override fun onFailure(call: Call<DataTrack>, t: Throwable) {
-                progressBar.visibility = GONE
+            502->{
                 internetError.visibility = VISIBLE
             }
-        })
+            400->{
+                resultsError.visibility = VISIBLE
+            }
+        }
+        progressBar.visibility = GONE
     }
     private fun searchDebounce(searchRunnable: Runnable) {
         progressBar.visibility = VISIBLE
