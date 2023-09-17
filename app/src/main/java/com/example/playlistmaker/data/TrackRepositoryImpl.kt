@@ -1,23 +1,20 @@
 package com.example.playlistmaker.data
 
-import com.example.playlistmaker.data.dto.DTOResponse
-import com.example.playlistmaker.data.network.RetrofitNetworkClient
+import com.example.playlistmaker.data.dto.TracksSearchRequest
 import com.example.playlistmaker.domain.api.TrackRepository
-import com.example.playlistmaker.domain.models.ResponseType
+import com.example.playlistmaker.data.dto.DataTrack
 import com.example.playlistmaker.domain.models.Track
 
-class TrackRepositoryImpl():TrackRepository {
-    private val retrofitNetworkClient : RetrofitNetworkClient = RetrofitNetworkClient()
-    lateinit var newArrayList : ArrayList<Track>
-    lateinit var response : DTOResponse
+class TrackRepositoryImpl(private val networkClient: NetworkClient):TrackRepository {
+    override var whatever : Int =0
     override fun searchTracks(expression: String): ArrayList<Track> {
-        newArrayList = arrayListOf<Track>()
-        newArrayList = retrofitNetworkClient.searchTracks(expression)
-        response=retrofitNetworkClient.doRequest()
-        if (retrofitNetworkClient.responseType == ResponseType.PROPER_RESPONSE){
-            return newArrayList
+        val response = networkClient.doRequest(TracksSearchRequest(expression))
+        whatever = response.resultCode
+        if (response.resultCode == 200) {
+            return (response as DataTrack).results.map {
+                Track(it.trackName, it.artistName, it.trackTimeMillis, it.artworkUrl100, it.primaryGenreName, it.collectionName, it.releaseDate, it.country, it.previewUrl) } as ArrayList<Track>
+        } else {
+            return arrayListOf()
         }
-        newArrayList.clear()
-        return newArrayList
     }
 }

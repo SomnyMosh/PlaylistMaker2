@@ -4,5 +4,5 @@ import com.example.playlistmaker.data.dto.DTOResponse
 
 
 interface NetworkClient {
-    fun doRequest():DTOResponse
+    fun doRequest(dto:Any):DTOResponse
 }

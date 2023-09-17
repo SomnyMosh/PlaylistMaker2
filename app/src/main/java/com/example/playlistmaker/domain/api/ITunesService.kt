@@ -1,6 +1,6 @@
 package com.example.playlistmaker.domain.api
 
-import com.example.playlistmaker.domain.models.DataTrack
+import com.example.playlistmaker.data.dto.DataTrack
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
