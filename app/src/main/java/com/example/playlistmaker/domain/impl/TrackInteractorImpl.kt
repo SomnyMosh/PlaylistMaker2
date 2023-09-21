@@ -1,10 +1,8 @@
 package com.example.playlistmaker.domain.impl
 
-import com.example.playlistmaker.data.dto.DataLoadedCallback
+import com.example.playlistmaker.data.DataLoadedCallback
 import com.example.playlistmaker.domain.api.TrackInteractor
 import com.example.playlistmaker.domain.api.TrackRepository
-import com.example.playlistmaker.domain.models.ResultNCode
-import com.example.playlistmaker.domain.models.Track
 import java.util.concurrent.Executors
 
 class TrackInteractorImpl (private val repository: TrackRepository) : TrackInteractor {

@@ -1,9 +1,9 @@
 package com.example.playlistmaker.data.network
 
+import com.example.playlistmaker.data.ITunesService
 import com.example.playlistmaker.data.NetworkClient
 import com.example.playlistmaker.data.dto.DTOResponse
 import com.example.playlistmaker.data.dto.TracksSearchRequest
-import com.example.playlistmaker.domain.models.ResponseType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -20,7 +20,7 @@ class RetrofitNetworkClient : NetworkClient {
         .addConverterFactory(GsonConverterFactory.create())
         .client(client)
         .build()
-    private var iTunesService = retrofit.create(com.example.playlistmaker.domain.api.ITunesService::class.java)
+    private var iTunesService = retrofit.create(ITunesService::class.java)
     override fun doRequest(dto:Any): DTOResponse {
         if (dto is TracksSearchRequest) {
             val resp = iTunesService.search(dto.expression).execute()

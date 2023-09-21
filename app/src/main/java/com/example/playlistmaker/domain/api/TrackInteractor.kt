@@ -1,7 +1,7 @@
 package com.example.playlistmaker.domain.api
 
-import com.example.playlistmaker.data.dto.DataLoadedCallback
-import com.example.playlistmaker.domain.models.ResultNCode
+import com.example.playlistmaker.data.DataLoadedCallback
+import com.example.playlistmaker.data.dto.ResultNCode
 import com.example.playlistmaker.domain.models.Track
 
 interface TrackInteractor {
@@ -9,6 +9,6 @@ interface TrackInteractor {
     interface TracksConsumer {
         fun consume(foundTracks: ArrayList<Track>)
         fun consumeCode(Code:Int)
-        fun show():ResultNCode
+        fun show(): ResultNCode
     }
 }

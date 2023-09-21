@@ -26,14 +26,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.playlistmaker.domain.impl.MyAdapter
+import com.example.playlistmaker.presentation.track.MyAdapter
 import com.example.playlistmaker.R
 import com.example.playlistmaker.domain.SaveData
 import com.example.playlistmaker.data.TrackRepositoryImpl
-import com.example.playlistmaker.data.dto.DataLoadedCallback
+import com.example.playlistmaker.data.DataLoadedCallback
 import com.example.playlistmaker.data.network.ConnectivityCheck
 import com.example.playlistmaker.data.network.RetrofitNetworkClient
-import com.example.playlistmaker.domain.OnItemClickListener
+import com.example.playlistmaker.data.OnItemClickListener
 import com.example.playlistmaker.domain.api.TrackInteractor
 import com.example.playlistmaker.domain.api.TrackRepository
 import com.example.playlistmaker.domain.impl.TrackInteractorImpl

@@ -1,12 +1,11 @@
-package com.example.playlistmaker.domain.impl
+package com.example.playlistmaker.presentation.track
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.R
-import com.example.playlistmaker.domain.OnItemClickListener
+import com.example.playlistmaker.data.OnItemClickListener
 import com.example.playlistmaker.domain.models.Track
-import com.example.playlistmaker.presentation.track.MyViewHolder
 
 @Suppress("DEPRECATION")
 class MyAdapter(
