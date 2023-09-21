@@ -28,14 +28,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.playlistmaker.domain.impl.MyAdapter
 import com.example.playlistmaker.R
-import com.example.playlistmaker.data.SaveData
+import com.example.playlistmaker.domain.SaveData
 import com.example.playlistmaker.data.TrackRepositoryImpl
 import com.example.playlistmaker.data.dto.DataLoadedCallback
+import com.example.playlistmaker.data.network.ConnectivityCheck
 import com.example.playlistmaker.data.network.RetrofitNetworkClient
 import com.example.playlistmaker.domain.api.TrackInteractor
 import com.example.playlistmaker.domain.api.TrackRepository
 import com.example.playlistmaker.domain.impl.TrackInteractorImpl
-import com.example.playlistmaker.domain.models.ResultNCode
 import com.example.playlistmaker.domain.models.Track
 import com.example.playlistmaker.ui.track.TrackActivity
 import com.google.gson.Gson
@@ -58,6 +58,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     var removableTrackPosition : Int = 0
     private var isClickAllowed = true
     private val handler = Handler(Looper.getMainLooper())
+    lateinit var connectivityCheck: ConnectivityCheck
     object Creator {
         private fun getTrackRepository(): TrackRepository {
             return TrackRepositoryImpl(RetrofitNetworkClient())
@@ -105,6 +106,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         savedTracks = convert()
         historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        connectivityCheck = ConnectivityCheck(this)
         val clearButton = findViewById<Button>(R.id.clear_button)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
@@ -269,6 +271,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             inFocus = true
             if (savedTracks.isNotEmpty()) {
                 trackHistory.visibility = VISIBLE
+                resultsError.visibility = GONE
             }
 
         } else {
@@ -321,7 +324,12 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
     }
     private fun searchRequest (p0:String){
-        Creator.provideTracksInteractor().searchTracks(p0, this)
+        if(connectivityCheck.checkForInternet(this@SearchActivity)){
+            Creator.provideTracksInteractor().searchTracks(p0, this)
+        }else{
+            internetError.visibility = View.VISIBLE
+            progressBar.visibility = GONE
+        }
     }
     override fun onDataLoaded(tracks: ArrayList<Track>) {
         // Process the loaded data

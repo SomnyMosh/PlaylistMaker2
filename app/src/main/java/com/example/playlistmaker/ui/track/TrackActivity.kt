@@ -17,7 +17,7 @@ import com.google.gson.reflect.TypeToken
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.playlistmaker.R
-import com.example.playlistmaker.data.SaveData
+import com.example.playlistmaker.domain.SaveData
 import com.example.playlistmaker.domain.models.Track
 import java.text.SimpleDateFormat
 import java.util.Locale
