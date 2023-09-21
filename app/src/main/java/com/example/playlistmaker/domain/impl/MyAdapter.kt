@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.OnItemClickListener
 import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.ui.search.MyViewHolder
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -18,11 +20,11 @@ import java.util.Locale
 class MyAdapter(
     private val trackList: ArrayList<Track>,
     private val listener: OnItemClickListener
-) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+) : RecyclerView.Adapter<MyViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val itemView =
             LayoutInflater.from(parent.context).inflate(R.layout.item_list, parent, false)
-        return MyViewHolder(itemView)
+        return MyViewHolder(itemView, listener)
     }
 
     override fun getItemCount(): Int {
@@ -31,44 +33,5 @@ class MyAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.bind(trackList[position])
-
-    }
-
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), OnClickListener {
-        private val titleImage: ShapeableImageView = itemView.findViewById(R.id.track_cover)
-        private val heading: TextView = itemView.findViewById(R.id.track_title)
-        private val undertext: TextView = itemView.findViewById(R.id.track_subtext)
-
-        fun bind(model: Track) {
-            Glide.with(itemView)
-                .load(model.artworkUrl100)
-                .apply(
-                    RequestOptions()
-                        .placeholder(R.drawable.a)
-                )
-                .into(titleImage)
-            heading.text = model.trackName
-            undertext.text = "${model.artistName} ● ${
-                SimpleDateFormat(
-                    "mm:ss",
-                    Locale.getDefault()
-                ).format(model.trackTimeMillis.toLong())
-            }"
-        }
-
-        init {
-            itemView.setOnClickListener(this)
-        }
-
-        override fun onClick(v: View?) {
-            val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION) {
-                listener.onItemClick(position)
-            }
-        }
-    }
-
-    interface OnItemClickListener {
-        fun onItemClick(position: Int)
     }
 }

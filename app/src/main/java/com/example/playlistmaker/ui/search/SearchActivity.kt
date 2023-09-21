@@ -33,6 +33,7 @@ import com.example.playlistmaker.data.TrackRepositoryImpl
 import com.example.playlistmaker.data.dto.DataLoadedCallback
 import com.example.playlistmaker.data.network.ConnectivityCheck
 import com.example.playlistmaker.data.network.RetrofitNetworkClient
+import com.example.playlistmaker.domain.OnItemClickListener
 import com.example.playlistmaker.domain.api.TrackInteractor
 import com.example.playlistmaker.domain.api.TrackRepository
 import com.example.playlistmaker.domain.impl.TrackInteractorImpl
@@ -42,7 +43,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
 
-class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
+class SearchActivity : AppCompatActivity(), OnItemClickListener,
     View.OnFocusChangeListener, DataLoadedCallback {
     lateinit var newRecyclerView: RecyclerView
     lateinit var historyRecyclerView: RecyclerView
