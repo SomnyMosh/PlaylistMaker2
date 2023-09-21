@@ -1,6 +1,6 @@
 package com.example.playlistmaker.data.network
 
-import com.example.playlistmaker.data.ITunesService
+import com.example.playlistmaker.domain.api.ITunesService
 import com.example.playlistmaker.data.NetworkClient
 import com.example.playlistmaker.data.dto.DTOResponse
 import com.example.playlistmaker.data.dto.TracksSearchRequest
