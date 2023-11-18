@@ -1,9 +1,7 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.domain.api
 
-import com.google.gson.Gson
-import okhttp3.ResponseBody
+import com.example.playlistmaker.data.dto.DataTrack
 import retrofit2.Call
-import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Query
 

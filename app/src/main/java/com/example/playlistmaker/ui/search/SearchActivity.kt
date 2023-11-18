@@ -1,13 +1,10 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.ui.search
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,32 +16,35 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
-import android.webkit.RenderProcessGoneDetail
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SearchView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.os.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.playlistmaker.presentation.track.MyAdapter
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.SaveData
+import com.example.playlistmaker.data.TrackRepositoryImpl
+import com.example.playlistmaker.data.DataLoadedCallback
+import com.example.playlistmaker.data.network.ConnectivityCheck
+import com.example.playlistmaker.data.network.RetrofitNetworkClient
+import com.example.playlistmaker.data.OnItemClickListener
+import com.example.playlistmaker.domain.api.TrackInteractor
+import com.example.playlistmaker.domain.api.TrackRepository
+import com.example.playlistmaker.domain.impl.TrackInteractorImpl
+import com.example.playlistmaker.domain.models.Track
+import com.example.playlistmaker.ui.track.TrackActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.reflect.Type
 
 
-class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
-    View.OnFocusChangeListener {
+class SearchActivity : AppCompatActivity(), OnItemClickListener,
+    View.OnFocusChangeListener, DataLoadedCallback {
     lateinit var newRecyclerView: RecyclerView
     lateinit var historyRecyclerView: RecyclerView
     lateinit var newArrayList: ArrayList<Track>
@@ -58,14 +58,24 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
     var inFocus: Boolean = false
     var removableTrackPosition : Int = 0
     private var isClickAllowed = true
-    private var seacrhNow = false
     private val handler = Handler(Looper.getMainLooper())
+    lateinit var connectivityCheck: ConnectivityCheck
+    object Creator {
+        private fun getTrackRepository(): TrackRepository {
+            return TrackRepositoryImpl(RetrofitNetworkClient())
+        }
+
+        fun provideTracksInteractor(): TrackInteractor {
+            return TrackInteractorImpl(getTrackRepository())
+        }
+    }
 
     companion object {
         private const val SEARCH_TEXT = "SEARCH_TEXT"
         private const val CLICK_DEBOUNCE_DELAY = 1000L
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -97,6 +107,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         savedTracks = convert()
         historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
         historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        connectivityCheck = ConnectivityCheck(this)
         val clearButton = findViewById<Button>(R.id.clear_button)
         val getBack = findViewById<TextView>(R.id.searchArrowBackButton)
         val searchView = findViewById<SearchView>(R.id.search_view)
@@ -106,12 +117,8 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         val searchCloseButtonId = searchView.context.resources
             .getIdentifier("android:id/search_close_btn", null, null)
         val closeButton = searchView.findViewById<ImageView>(searchCloseButtonId)
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://itunes.apple.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        var ITunesService = retrofit.create(ITunesService::class.java)
-        val searchRunnable = Runnable { searchRequest(editedText, ITunesService) }
+        val searchRunnable = Runnable { searchRequest(editedText) }
+
 
         // Set on click listener
         newRecyclerView = findViewById(R.id.tracks)
@@ -169,7 +176,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
                     submitEditText = ""
                 }
                 if (p0 != null) {
-                    searchRequest(p0, ITunesService)
+                    searchRequest(p0)
                     if (editedText != p0) {
                         editedText = p0
                     }
@@ -213,7 +220,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             finish()
         }
         refreshButton.setOnClickListener {
-            searchRequest(submitEditText!!, ITunesService)
+            searchRequest(submitEditText!!)
         }
         clearButton.setOnClickListener {
             savedTracks.clear()
@@ -221,6 +228,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             savedTracks = convert()
             historyRecyclerView.adapter?.notifyDataSetChanged()
             historyRecyclerView.adapter = MyAdapter(reverse(savedTracks), this@SearchActivity)
+            resultsError.visibility=GONE
         }
     }
 
@@ -264,6 +272,7 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
             inFocus = true
             if (savedTracks.isNotEmpty()) {
                 trackHistory.visibility = VISIBLE
+                resultsError.visibility = GONE
             }
 
         } else {
@@ -310,36 +319,43 @@ class SearchActivity : AppCompatActivity(), MyAdapter.OnItemClickListener,
         }
         return false
     }
-    private fun searchRequest (p0:String, ITunesService: ITunesService){
-        ITunesService.search(p0).enqueue(object : Callback<DataTrack> {
-            override fun onResponse(
-                call: Call<DataTrack>,
-                response: Response<DataTrack>
-            ) {
-                if (response.isSuccessful) {
-                    if (response.body()?.resultCount != 0) {
-                        newRecyclerView.visibility = VISIBLE
-                        newArrayList.clear()
-                        newArrayList.addAll(response.body()?.results!!)
-                        newRecyclerView.adapter =
-                            MyAdapter(newArrayList, this@SearchActivity)
-                    } else {
-                        resultsError.visibility = VISIBLE
-                    }
-                    progressBar.visibility = GONE
-                }
-            }
-
-            override fun onFailure(call: Call<DataTrack>, t: Throwable) {
-                progressBar.visibility = GONE
-                internetError.visibility = VISIBLE
-            }
-        })
-    }
     private fun searchDebounce(searchRunnable: Runnable) {
         progressBar.visibility = VISIBLE
         handler.removeCallbacks(searchRunnable)
         handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
     }
+    private fun searchRequest (p0:String){
+        if(connectivityCheck.checkForInternet(this@SearchActivity)){
+            Creator.provideTracksInteractor().searchTracks(p0, this)
+        }else{
+            internetError.visibility = View.VISIBLE
+            progressBar.visibility = GONE
+        }
+    }
+    override fun onDataLoaded(tracks: ArrayList<Track>) {
+        // Process the loaded data
+        runOnUiThread {
+            if (!tracks.isEmpty()) {
+                newRecyclerView.visibility = View.VISIBLE
+                newArrayList.clear()
+                newArrayList.addAll(tracks)
+                newRecyclerView.adapter = MyAdapter(newArrayList, this@SearchActivity)
+            } else {
+                resultsError.visibility = View.VISIBLE
+            }
+            progressBar.visibility = View.GONE
+        }
+    }
 
+    override fun onError(code: Int) {
+        // Handle the error
+        runOnUiThread {
+            if (code == 0) {
+                internetError.visibility = View.VISIBLE
+            } else {
+                resultsError.visibility = View.VISIBLE
+            }
+            progressBar.visibility = View.GONE
+        }
+    }
 }

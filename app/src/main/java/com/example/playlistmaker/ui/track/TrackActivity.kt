@@ -1,4 +1,4 @@
-package com.example.playlistmaker
+package com.example.playlistmaker.ui.track
 
 import android.media.MediaPlayer
 import androidx.appcompat.app.AppCompatActivity
@@ -8,7 +8,6 @@ import android.os.Looper
 
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -17,6 +16,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.example.playlistmaker.R
+import com.example.playlistmaker.domain.SaveData
+import com.example.playlistmaker.domain.models.Track
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -39,7 +41,7 @@ class TrackActivity : AppCompatActivity() {
         setContentView(R.layout.activity_track)
         supportActionBar?.hide()
         setContentView(R.layout.activity_track)
-        val track:Track
+        val track: Track
         saveData = SaveData(this)
         val gson = Gson()
         val type = object : TypeToken<ArrayList<Track>>() {}.type
