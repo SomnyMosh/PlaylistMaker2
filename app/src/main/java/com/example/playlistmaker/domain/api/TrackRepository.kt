@@ -1,9 +1,9 @@
 package com.example.playlistmaker.domain.api
 
+import com.example.playlistmaker.data.dto.Resource
 import com.example.playlistmaker.domain.models.Track
 
 interface TrackRepository {
-    abstract val whatever: Int
 
-    fun searchTracks (expression: String):ArrayList<Track>
+    fun searchTracks (expression: String): Resource<List<Track>>
 }

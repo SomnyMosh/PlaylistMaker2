@@ -8,7 +8,7 @@ import android.os.Build
 class ConnectivityCheck(private val context: Context) {
 
     val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    fun checkForInternet(context: Context): Boolean {
+    fun checkForInternet(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val network = connectivityManager.activeNetwork ?: return false
             val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false

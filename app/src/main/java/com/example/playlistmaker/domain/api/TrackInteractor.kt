@@ -1,14 +1,11 @@
 package com.example.playlistmaker.domain.api
 
-import com.example.playlistmaker.data.DataLoadedCallback
-import com.example.playlistmaker.data.dto.ResultNCode
+import com.example.playlistmaker.domain.models.ErrorType
 import com.example.playlistmaker.domain.models.Track
 
 interface TrackInteractor {
-    fun searchTracks(expression: String, callback: DataLoadedCallback)
+    fun searchTracks(expression: String, consumer: TracksConsumer)
     interface TracksConsumer {
-        fun consume(foundTracks: ArrayList<Track>)
-        fun consumeCode(Code:Int)
-        fun show(): ResultNCode
+        fun consume(foundTracks: List<Track>?, errorMessage: ErrorType?)
     }
 }

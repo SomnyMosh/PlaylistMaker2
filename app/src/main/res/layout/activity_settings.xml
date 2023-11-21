@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/settings_background"
-    tools:context=".ui.settings.SettingsActivity">
+    tools:context=".ui.settings.SettingsActivityView">
 
     <TextView
         android:id="@+id/arrowBackButton"
