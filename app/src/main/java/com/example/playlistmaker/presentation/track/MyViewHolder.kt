@@ -1,5 +1,6 @@
 package com.example.playlistmaker.presentation.track
 
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +16,7 @@ import java.util.Locale
 class MyViewHolder(private val binding:ItemListBinding) : RecyclerView.ViewHolder(binding.root){
 
     fun bind(model: Track) {
+        Log.d("MyViewHolder", "Binding track: ${model.trackName}")
         Glide.with(itemView)
             .load(model.artworkUrl100)
             .apply(

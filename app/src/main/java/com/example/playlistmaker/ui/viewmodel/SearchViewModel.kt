@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import com.example.playlistmaker.domain.api.TrackInteractor
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.playlistmaker.domain.MyApplication
 import com.example.playlistmaker.domain.history.HistoryInteractor
 import com.example.playlistmaker.domain.models.ErrorType
 import com.example.playlistmaker.domain.models.Track
@@ -70,12 +69,5 @@ class SearchViewModel(private var searchInteractor: TrackInteractor, private var
             searchHistoryList.postValue(emptyList())
         }
         return searchHistoryList
-    }
-
-    fun clearSearchingHistoryList() {
-        results.value = emptyList()
-        searchHistoryList.value = historyInteractor.provideSearchHistory()
-        searchLiveData.value =
-            searchHistoryList.value?.let { StatesOfSearching.SavedResults(it) }
     }
 }

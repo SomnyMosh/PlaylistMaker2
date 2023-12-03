@@ -7,11 +7,13 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.Html
+import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.Window
 import android.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +30,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class SearchActivityView : AppCompatActivity() {
 
 
-    private lateinit var viewModel: SearchViewModel
     private lateinit var binding: ActivitySearchBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var searchHistoryRecyclerView: RecyclerView
@@ -69,6 +70,7 @@ class SearchActivityView : AppCompatActivity() {
                 is StatesOfSearching.ErrorFound -> errorFound()
                 is StatesOfSearching.SavedResults -> history(states.history)
                 is StatesOfSearching.SearchCompleted -> searchCompleted(states.data)
+                is StatesOfSearching.FirstOpened -> initial()
             }
         }
 
@@ -96,17 +98,26 @@ class SearchActivityView : AppCompatActivity() {
         searchHistoryRecyclerView.adapter = searchHistoryAdapter
 
         binding.clearButton.setOnClickListener {
-            viewModel.clearHistory()
+            tracksSearchViewModel.clearHistory()
             binding.resultsError.visibility = GONE
         }
 
-        viewModel.provideSearchHistory().observe(this) { value ->
+        tracksSearchViewModel.provideSearchHistory().observe(this) { value ->
             value.ifEmpty { emptyList() }
         }
         binding.refreshButton.setOnClickListener {
             searchRequest()
         }
     }
+
+    private fun initial() {
+        binding.progressBar.visibility = GONE
+        binding.resultsError.visibility = GONE
+        binding.trackHistory.visibility = GONE
+        binding.tracks.visibility= GONE
+        binding.noInternet.visibility= GONE
+    }
+
     private fun history(history: List<Track>) {
         showHistory()
         searchHistoryAdapter.setIt(history)
@@ -114,7 +125,9 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun searchCompleted(data: List<Track>){
+        Log.d("SearchActivityView", "Data size: ${data.size}")
         tracksAdapter.setIt(data)
+        tracksAdapter.notifyDataSetChanged()
         showSearchResults()
     }
 
@@ -151,6 +164,7 @@ class SearchActivityView : AppCompatActivity() {
             override fun onQueryTextChange(p0: String?): Boolean {
                 if(p0!=null && p0!=""){
                     showProgressBar()
+                    Toast.makeText(applicationContext, "text changed", Toast.LENGTH_SHORT).show()
                     searchDebounce()
                 }
                 return false
@@ -159,7 +173,7 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun clicker(item: Track) {
-        viewModel.add(item)
+        tracksSearchViewModel.add(item)
         val intent = Intent(this, TrackActivity::class.java)
         this.startActivity(intent)
     }
@@ -167,6 +181,7 @@ class SearchActivityView : AppCompatActivity() {
     private fun searchDebounce(){
         handler.removeCallbacks(searchRunnable)
         handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+        Toast.makeText(applicationContext, "Debounced", Toast.LENGTH_SHORT).show()
     }
 
     private fun errorFound() {
@@ -190,11 +205,11 @@ class SearchActivityView : AppCompatActivity() {
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
         binding.noInternet.visibility= GONE
+        binding.progressBar.visibility= GONE
     }
 
     private fun loading(){
         binding.progressBar.visibility= VISIBLE
-        binding.progressBar.visibility = GONE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
@@ -209,6 +224,7 @@ class SearchActivityView : AppCompatActivity() {
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= VISIBLE
+        Toast.makeText(applicationContext, "SearchResults", Toast.LENGTH_SHORT).show()
         binding.noInternet.visibility= GONE
     }
 
@@ -235,7 +251,7 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun searchRequest(){
-        viewModel.requestSearch(binding.searchView.query.toString())
+        tracksSearchViewModel.requestSearch(binding.searchView.query.toString())
     }
 
     private fun isDarkModeOn(): Boolean {

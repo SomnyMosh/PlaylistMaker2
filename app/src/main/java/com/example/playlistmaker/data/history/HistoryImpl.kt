@@ -24,6 +24,7 @@ private val gson: Gson) : History {
     }
 
     override fun add(newIt: Track) {
+
         val json = savedSearchHistory.getString(SEARCH_SHARED_PREFERENCE, "")
         if (json != null && json.isNotEmpty() && trackHistoryList.isEmpty() && savedSearchHistory.contains(
                 SEARCH_SHARED_PREFERENCE
@@ -60,6 +61,7 @@ private val gson: Gson) : History {
                 trackHistoryList = ArrayList()
         }
         return trackHistoryList
+
     }
 
     private fun save() {

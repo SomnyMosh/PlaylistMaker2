@@ -3,7 +3,6 @@ package com.example.playlistmaker.data
 import com.example.playlistmaker.domain.api.TrackRepository
 import com.example.playlistmaker.data.dto.DataTrack
 import com.example.playlistmaker.data.dto.Resource
-import com.example.playlistmaker.data.dto.ResultNCode
 import com.example.playlistmaker.data.dto.SearchRequest
 import com.example.playlistmaker.domain.models.ErrorType
 import com.example.playlistmaker.domain.models.Track
@@ -19,7 +18,7 @@ class TrackRepositoryImpl(private val networkClient: NetworkClient):TrackReposit
                 }
 
                 200 -> {
-                    Resource.Success((response as ResultNCode).results.map {
+                    Resource.Success((response as DataTrack).results.map {
                         Track(
                             it.trackName,
                             it.artistName,
