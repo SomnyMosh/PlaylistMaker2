@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
@@ -25,7 +26,9 @@ import com.example.playlistmaker.ui.track.TrackActivity
 import com.example.playlistmaker.ui.viewmodel.SearchViewModel
 import com.example.playlistmaker.ui.viewmodel.states.StatesOfSearching
 import org.koin.androidx.viewmodel.ext.android.viewModel
-
+import android.content.Context
+import android.view.View
+import android.widget.EditText
 
 class SearchActivityView : AppCompatActivity() {
 
@@ -39,6 +42,7 @@ class SearchActivityView : AppCompatActivity() {
     private lateinit var searchHistoryAdapter: MyAdapter
     private val tracksSearchViewModel by viewModel<SearchViewModel>()
     private val searchRunnable = Runnable { searchRequest() }
+    private var isKeyboardShowing = false
 
 
 
@@ -70,12 +74,11 @@ class SearchActivityView : AppCompatActivity() {
                 is StatesOfSearching.ErrorFound -> errorFound()
                 is StatesOfSearching.SavedResults -> history(states.history)
                 is StatesOfSearching.SearchCompleted -> searchCompleted(states.data)
-                is StatesOfSearching.FirstOpened -> initial()
+                else -> initial()
             }
         }
 
-        onFocus()
-
+        historyTrigger()
         onTextChange()
 
         tracksAdapter = MyAdapter {
@@ -108,10 +111,14 @@ class SearchActivityView : AppCompatActivity() {
         binding.refreshButton.setOnClickListener {
             searchRequest()
         }
+        binding.searchArrowBackButton.setOnClickListener {
+            finish()
+        }
+
     }
 
     private fun initial() {
-        binding.progressBar.visibility = GONE
+        binding.progressBarLayout.visibility = GONE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
@@ -127,15 +134,33 @@ class SearchActivityView : AppCompatActivity() {
     private fun searchCompleted(data: List<Track>){
         Log.d("SearchActivityView", "Data size: ${data.size}")
         tracksAdapter.setIt(data)
-        tracksAdapter.notifyDataSetChanged()
         showSearchResults()
     }
 
-    private fun onFocus(){
-        binding.searchView.setOnFocusChangeListener{ view, hasFocus ->
-            if (hasFocus && ((binding.searchView.query.toString() == "")||binding.searchView.query==null)){
+    private fun historyTrigger(){
+        binding.searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                onFocus(true)
+            } else {
+                onFocus(false)
+            }
+        }
+    }
+    override fun onBackPressed() {
+        if (binding.searchView.isFocused) {
+            // The SearchView is focused, handle the back press here
+            binding.searchView.clearFocus() // This will cause the SearchView to lose focus
+            // Optionally, collapse the SearchView if it is expanded
+            // Additional logic if needed
+        } else {
+            // If the SearchView is not focused, call the super method to handle default back press behavior
+            super.onBackPressed()
+        }
+    }
+    private fun onFocus(focus:Boolean?) {
+        if (focus == false) {
+            if (binding.searchView.query == null || binding.searchView.query == "")
                 tracksSearchViewModel.provideSearchHistory()
-
                     .observe(this) { searchHistoryList ->
                         if (searchHistoryList.isNotEmpty()) {
                             showHistory()
@@ -143,12 +168,10 @@ class SearchActivityView : AppCompatActivity() {
                             binding.trackHistory.visibility = GONE
                         }
                     }
-            } else {
-                binding.trackHistory.visibility = GONE
-            }
+        } else {
+            binding.trackHistory.visibility = GONE
         }
     }
-
     private fun onTextChange(){
         binding.searchView.setOnQueryTextListener(object :
             androidx.appcompat.widget.SearchView.OnQueryTextListener,
@@ -185,7 +208,7 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun errorFound() {
-        binding.progressBar.visibility = GONE
+        binding.progressBarLayout.visibility = GONE
         binding.resultsError.visibility = VISIBLE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
@@ -193,7 +216,7 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun errorConnection() {
-        binding.progressBar.visibility = GONE
+        binding.progressBarLayout.visibility = GONE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
@@ -205,11 +228,11 @@ class SearchActivityView : AppCompatActivity() {
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
         binding.noInternet.visibility= GONE
-        binding.progressBar.visibility= GONE
+        binding.progressBarLayout.visibility= GONE
     }
 
     private fun loading(){
-        binding.progressBar.visibility= VISIBLE
+        binding.progressBarLayout.visibility= VISIBLE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= GONE
@@ -217,10 +240,10 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     fun showProgressBar(){
-        binding.progressBar.visibility= VISIBLE
+        binding.progressBarLayout.visibility= VISIBLE
     }
     private fun showSearchResults() {
-        binding.progressBar.visibility = GONE
+        binding.progressBarLayout.visibility = GONE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = GONE
         binding.tracks.visibility= VISIBLE
@@ -229,7 +252,7 @@ class SearchActivityView : AppCompatActivity() {
     }
 
     private fun showHistory(){
-        binding.progressBar.visibility = GONE
+        binding.progressBarLayout.visibility = GONE
         binding.resultsError.visibility = GONE
         binding.trackHistory.visibility = VISIBLE
         binding.tracks.visibility= GONE
@@ -253,6 +276,7 @@ class SearchActivityView : AppCompatActivity() {
     private fun searchRequest(){
         tracksSearchViewModel.requestSearch(binding.searchView.query.toString())
     }
+
 
     private fun isDarkModeOn(): Boolean {
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK

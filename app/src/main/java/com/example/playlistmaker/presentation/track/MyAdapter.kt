@@ -27,7 +27,6 @@ class MyAdapter(val listener: Click) : RecyclerView.Adapter<MyViewHolder>() {
         holder.bind(_it[position])
         holder.itemView.setOnClickListener {
             listener.onClick(_it[position])
-            notifyDataSetChanged()
         }
         Log.d("MyAdapter", "y e s")
     }

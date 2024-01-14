@@ -13,6 +13,6 @@ val searchInteractorModule = module {
     }
 
     single <HistoryInteractor> {
-        HistoryInteractorImpl(get())
+        HistoryInteractorImpl()
     }
 }

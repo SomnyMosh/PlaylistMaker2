@@ -3,7 +3,7 @@ package com.example.playlistmaker.domain
 import android.content.Context
 import android.content.SharedPreferences
 
-class SaveData (context: Context) {
+class SaveData(context: Context) {
     private var sharedPreferencesTrack: SharedPreferences=context.getSharedPreferences("list", Context.MODE_PRIVATE)
 
 
