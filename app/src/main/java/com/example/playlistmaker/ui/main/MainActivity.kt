@@ -7,8 +7,8 @@ import android.view.Window
 import android.widget.Button
 import com.example.playlistmaker.ui.library.LibraryActivity
 import com.example.playlistmaker.R
-import com.example.playlistmaker.ui.search.SearchActivity
-import com.example.playlistmaker.ui.settings.SettingsActivity
+import com.example.playlistmaker.ui.search.SearchActivityView
+import com.example.playlistmaker.ui.settings.SettingsActivityView
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         val libraryB = findViewById<Button>(R.id.libraryButton)
         val settingsB = findViewById<Button>(R.id.settingsButton)
         searchB.setOnClickListener {
-            val displayIntent = Intent(this, SearchActivity::class.java)
+            val displayIntent = Intent(this, SearchActivityView::class.java)
             startActivity(displayIntent)
         }
         libraryB.setOnClickListener {
@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(displayIntent)
         }
         settingsB.setOnClickListener {
-            val displayIntent = Intent(this, SettingsActivity::class.java)
+            val displayIntent = Intent(this, SettingsActivityView::class.java)
             startActivity(displayIntent)
         }
     }

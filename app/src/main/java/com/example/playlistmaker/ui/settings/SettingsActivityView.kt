@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.example.playlistmaker.R
 
 
-class SettingsActivity : AppCompatActivity() {
+class SettingsActivityView : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

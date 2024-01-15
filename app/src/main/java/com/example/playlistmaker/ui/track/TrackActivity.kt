@@ -80,7 +80,7 @@ class TrackActivity : AppCompatActivity() {
         }else{
             album.visibility = GONE
         }
-        year.text=track.releaseDate.take(4)
+        year.text= track.releaseDate!!.take(4)
         genre.text=track.primaryGenreName
         country.text=track.country
         preparePlayer(track.previewUrl, play)

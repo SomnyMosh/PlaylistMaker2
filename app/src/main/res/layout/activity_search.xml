@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/settings_background"
-    tools:context=".ui.settings.SettingsActivity">
+    tools:context=".ui.settings.SettingsActivityView">
 
 
     <TextView
@@ -27,6 +28,7 @@
         android:layout_height="25dp" />
 
     <LinearLayout
+        android:id="@+id/search_view_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -79,7 +81,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="36dp" />
+            android:layout_height="36dp"/>
 
         <TextView
             android:id="@+id/history_message"
@@ -158,7 +160,6 @@
         <Space
             android:layout_width="match_parent"
             android:layout_height="21dp" />
-
         <Button
             android:id="@+id/refresh_button"
             android:text="@string/refresh"
