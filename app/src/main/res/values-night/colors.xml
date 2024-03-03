@@ -20,4 +20,6 @@
     <color name="search_subtext">#FFFFFF</color>
     <color name="player_button">#535359</color>
     <color name="progress_bar">#6200EE</color>
+    <color name="search_hint">#1A1B22</color>
+    <color name="search_input_text">#0F0F13</color>
 </resources>

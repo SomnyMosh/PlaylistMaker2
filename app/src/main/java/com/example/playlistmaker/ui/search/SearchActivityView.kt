@@ -27,8 +27,13 @@ import com.example.playlistmaker.ui.viewmodel.SearchViewModel
 import com.example.playlistmaker.ui.viewmodel.states.StatesOfSearching
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.core.content.ContextCompat
 
 class SearchActivityView : AppCompatActivity() {
 
@@ -43,6 +48,8 @@ class SearchActivityView : AppCompatActivity() {
     private val tracksSearchViewModel by viewModel<SearchViewModel>()
     private val searchRunnable = Runnable { searchRequest() }
     private var isKeyboardShowing = false
+    private var firstTime = true
+    private var resultsOn = false
 
 
 
@@ -61,11 +68,6 @@ class SearchActivityView : AppCompatActivity() {
         supportActionBar?.hide()
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        if (isDarkModeOn()) {
-            changeHint("#1A1B22") //не получалось поменять цвет в атрибутах, поменял тут
-        } else {
-            changeHint("#AEAFB4")
-        }
         tracksSearchViewModel.getSearchLiveData().observe(this) { searchLiveData ->
             when (val states = searchLiveData) {
                 is StatesOfSearching.Loading -> loading()
@@ -77,7 +79,35 @@ class SearchActivityView : AppCompatActivity() {
                 else -> initial()
             }
         }
+        binding.closeButton.visibility = GONE
+        binding.closeButton.setOnClickListener {
+            binding.searchEditText.setText("")
+            binding.searchEditText.clearFocus()
+            binding.closeButton.visibility = GONE
+        }
 
+        binding.searchEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s.isNullOrEmpty()) {
+                    binding.closeButton.visibility = GONE
+                } else {
+                    binding.closeButton.visibility = VISIBLE
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        binding.searchEditText.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchRequest()
+                true
+            } else {
+                false
+            }
+        }
         historyTrigger()
         onTextChange()
 
@@ -102,7 +132,7 @@ class SearchActivityView : AppCompatActivity() {
 
         binding.clearButton.setOnClickListener {
             tracksSearchViewModel.clearHistory()
-            binding.resultsError.visibility = GONE
+            binding.trackHistory.visibility = GONE
         }
 
         tracksSearchViewModel.provideSearchHistory().observe(this) { value ->
@@ -124,6 +154,13 @@ class SearchActivityView : AppCompatActivity() {
         binding.tracks.visibility= GONE
         binding.noInternet.visibility= GONE
     }
+    override fun onBackPressed() {
+        if (binding.searchEditText.hasFocus()) {
+            binding.searchEditText.clearFocus()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     private fun history(history: List<Track>) {
         showHistory()
@@ -135,10 +172,15 @@ class SearchActivityView : AppCompatActivity() {
         Log.d("SearchActivityView", "Data size: ${data.size}")
         tracksAdapter.setIt(data)
         showSearchResults()
+        resultsOn = data.size != 0
     }
 
     private fun historyTrigger(){
-        binding.searchView.setOnQueryTextFocusChangeListener { v, hasFocus ->
+        if (firstTime == true){
+            onFocus(false)
+            firstTime=false
+        }
+        binding.searchEditText.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 onFocus(true)
             } else {
@@ -146,53 +188,26 @@ class SearchActivityView : AppCompatActivity() {
             }
         }
     }
-    override fun onBackPressed() {
-        if (binding.searchView.isFocused) {
-            // The SearchView is focused, handle the back press here
-            binding.searchView.clearFocus() // This will cause the SearchView to lose focus
-            // Optionally, collapse the SearchView if it is expanded
-            // Additional logic if needed
-        } else {
-            // If the SearchView is not focused, call the super method to handle default back press behavior
-            super.onBackPressed()
-        }
-    }
+
     private fun onFocus(focus:Boolean?) {
         if (focus == false) {
-            if (binding.searchView.query == null || binding.searchView.query == "")
+            if (binding.searchEditText.text.toString().isNullOrEmpty())
                 tracksSearchViewModel.provideSearchHistory()
                     .observe(this) { searchHistoryList ->
                         if (searchHistoryList.isNotEmpty()) {
-                            showHistory()
+                            history(searchHistoryList)
                         } else {
                             binding.trackHistory.visibility = GONE
                         }
                     }
         } else {
-            binding.trackHistory.visibility = GONE
+            if (resultsOn==true){
+                binding.trackHistory.visibility = GONE
+            }
         }
     }
     private fun onTextChange(){
-        binding.searchView.setOnQueryTextListener(object :
-            androidx.appcompat.widget.SearchView.OnQueryTextListener,
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                showProgressBar()
-                if (p0 != null) {
-                    searchRequest()
-                }
-                return false
-            }
 
-            override fun onQueryTextChange(p0: String?): Boolean {
-                if(p0!=null && p0!=""){
-                    showProgressBar()
-                    Toast.makeText(applicationContext, "text changed", Toast.LENGTH_SHORT).show()
-                    searchDebounce()
-                }
-                return false
-            }
-        })
     }
 
     private fun clicker(item: Track) {
@@ -270,11 +285,26 @@ class SearchActivityView : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(QUERY, binding.searchView.query.toString())
+        outState.putString(QUERY, binding.searchEditText.text.toString())
+    }
+
+    private fun hideKeyboard() {
+        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
+    }
+
+    private fun toggleSearchResultsAndHistoryVisibility() {
+        if (binding.tracks.visibility == View.VISIBLE) {
+            binding.tracks.visibility = View.GONE
+            binding.trackHistory.visibility = View.VISIBLE
+        } else {
+            binding.tracks.visibility = View.VISIBLE
+            binding.trackHistory.visibility = View.GONE
+        }
     }
 
     private fun searchRequest(){
-        tracksSearchViewModel.requestSearch(binding.searchView.query.toString())
+        tracksSearchViewModel.requestSearch(binding.searchEditText.text.toString())
     }
 
 
@@ -283,14 +313,5 @@ class SearchActivityView : AppCompatActivity() {
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 
-    private fun changeHint(color: String) {
-        val id=
-            binding.searchView.context.resources.getIdentifier("android:id/search_src_text", null, null)
-        binding.searchView.findViewById<TextView>(id).setTextColor(Color.parseColor(color))
-        binding.searchView.queryHint = Html.fromHtml(
-            "<font color = $color>" + resources.getString(
-                R.string.button_search
-            ) + "</font>"
-        )
-    }
+
 }
