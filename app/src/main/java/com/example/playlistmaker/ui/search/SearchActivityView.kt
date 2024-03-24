@@ -47,9 +47,22 @@ class SearchActivityView : AppCompatActivity() {
     private lateinit var searchHistoryAdapter: MyAdapter
     private val tracksSearchViewModel by viewModel<SearchViewModel>()
     private val searchRunnable = Runnable { searchRequest() }
-    private var isKeyboardShowing = false
     private var firstTime = true
     private var resultsOn = false
+    private val textWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            // Reset the Runnable every time the text changes
+            handler.removeCallbacks(searchRunnable)
+            if (s != null && s.isNotEmpty()) {
+                // Postpone the search request by a certain delay
+                handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+            }
+        }
+
+        override fun afterTextChanged(s: Editable?) {}
+    }
 
 
 
@@ -144,6 +157,7 @@ class SearchActivityView : AppCompatActivity() {
         binding.searchArrowBackButton.setOnClickListener {
             finish()
         }
+        binding.searchEditText.addTextChangedListener(textWatcher)
 
     }
 

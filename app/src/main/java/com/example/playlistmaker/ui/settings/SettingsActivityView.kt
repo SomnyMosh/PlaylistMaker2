@@ -10,59 +10,62 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.ViewModelProvider
 import com.example.playlistmaker.R
+import com.example.playlistmaker.databinding.ActivitySearchBinding
+import com.example.playlistmaker.databinding.ActivitySettingsBinding
+import com.example.playlistmaker.domain.SettingsInteractor
+import com.example.playlistmaker.domain.SettingsViewModelActions
+import com.example.playlistmaker.ui.viewmodel.SettingsViewModel
 
 
-class SettingsActivityView : AppCompatActivity() {
+class SettingsActivityView : AppCompatActivity(), SettingsViewModelActions {
+    private lateinit var viewModel: SettingsViewModel
+    private lateinit var binding: ActivitySettingsBinding
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         supportActionBar?.hide()
         setContentView(R.layout.activity_settings)
-        val sup = findViewById<TextView>(R.id.support)
-        val share = findViewById<TextView>(R.id.share)
-        val userA = findViewById<TextView>(R.id.userAgreement)
-        val getBack = findViewById<TextView>(R.id.arrowBackButton)
-        val switchM : Switch =  findViewById(R.id.switch1)
-        switchM.isChecked = isDarkModeOn()
-        switchM!!.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked){
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            }else{
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            }
+        viewModel = ViewModelProvider(this).get(SettingsViewModel::class.java)
+        viewModel.setActions(this)
+        binding.switch1.isChecked = viewModel.isDarkModeOn()
+        binding.switch1.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.changeTheme(isChecked)
         }
-
-        getBack.setOnClickListener {
+        binding.arrowBackButton.setOnClickListener {
             finish()
         }
-        sup.setOnClickListener {
-            val emailIntent = Intent(Intent.ACTION_SENDTO)
-            emailIntent.data = Uri.parse("mailto:")
-            val message = getResources().getString(R.string.settings_message)
-            val title = getResources().getString(R.string.settings_title)
-            val email = getResources().getString(R.string.settings_email)
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, title)
-            emailIntent.putExtra(Intent.EXTRA_TEXT, message)
-            startActivity(emailIntent)
+        binding.support.setOnClickListener{
+            viewModel.contactSupport()
         }
-        share.setOnClickListener {
-            val shareIntent= Intent()
-            shareIntent.action=Intent.ACTION_SEND
-            shareIntent.putExtra(Intent.EXTRA_TEXT,getResources().getString(R.string.settings_link_share))
-            shareIntent.type="text/plain"
-            startActivity(Intent.createChooser(shareIntent,"Share To:"))
+        binding.share.setOnClickListener{
+            viewModel.shareApp()
         }
-        userA.setOnClickListener {
-            val url = Uri.parse(getResources().getString(R.string.settings_link))
-            val intent = Intent(Intent.ACTION_VIEW, url)
-            startActivity(intent)
+        binding.userAgreement.setOnClickListener {
+            viewModel.openTerms()
         }
     }
-    private fun isDarkModeOn(): Boolean {
-        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        return currentNightMode == Configuration.UI_MODE_NIGHT_YES
+
+    override fun shareApp(url: String) {
+        val shareIntent= Intent()
+        shareIntent.action=Intent.ACTION_SEND
+        shareIntent.putExtra(Intent.EXTRA_TEXT,Uri.parse(url))
+        shareIntent.type="text/plain"
+    }
+
+    override fun openTerms(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        startActivity(intent)
+    }
+
+    override fun contactSupport(message: String, title: String, email: String) {
+        val emailIntent = Intent(Intent.ACTION_SENDTO)
+        emailIntent.data = Uri.parse("mailto:")
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, title)
+        emailIntent.putExtra(Intent.EXTRA_TEXT, message)
+        startActivity(emailIntent)
     }
 }

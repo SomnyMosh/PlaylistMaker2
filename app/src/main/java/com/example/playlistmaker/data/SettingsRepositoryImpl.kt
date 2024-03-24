@@ -1,15 +1,13 @@
-package com.example.playlistmaker.domain
+package com.example.playlistmaker.data
 
-import android.content.Context
 import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.playlistmaker.domain.MyApplication
+import com.example.playlistmaker.domain.SettingsRepository
 
-class SettingsInteractorImpl(private val context: Context) : SettingsInteractor {
-
-    var flagDark = true
-
+class SettingsRepositoryImpl() : SettingsRepository {
     override fun changeTheme(isChecked: Boolean) {
-        if (isDark()){
+        if(isChecked){
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         }else{
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -17,7 +15,9 @@ class SettingsInteractorImpl(private val context: Context) : SettingsInteractor 
     }
 
     override fun isDark(): Boolean {
-        val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val currentNightMode = (MyApplication.getAppContext()?.resources?.configuration?.uiMode)?.and(
+            Configuration.UI_MODE_NIGHT_MASK
+        )
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 

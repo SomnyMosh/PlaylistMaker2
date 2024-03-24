@@ -1,9 +1,7 @@
 package com.example.playlistmaker.domain
 
-interface SettingsInteractor {
-
+interface SettingsRepository {
     fun changeTheme(isChecked: Boolean)
 
     fun isDark(): Boolean
-
 }
